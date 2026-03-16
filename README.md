@@ -11,9 +11,9 @@
 
 ## 🖥️ Live Demo
 
-> **[Launch ITR Dashboard →](https://yourusername.github.io/itr-dashboard)**
+> **[Launch ITR Dashboard →](https://mallimmallim1.github.io/itr-dashboard)**
 >
-> **[Launch ITR Portal (Login + Admin) →](https://yourusername.github.io/itr-dashboard/itr-portal.html)**
+> **[Launch ITR Portal (Login + Admin) →](https://mallimmallim1.github.io/itr-dashboard/itr-portal.html)**
 
 ---
 
