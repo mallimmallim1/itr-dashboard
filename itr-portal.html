@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ITR Portal — India Tax Returns</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #05080f;
+  --surface: #0d1117;
+  --surface2: #161b22;
+  --surface3: #1c2333;
+  --border: #21262d;
+  --border2: #30363d;
+  --gold: #f0a500;
+  --gold2: #fbbf24;
+  --green: #3fb950;
+  --red: #f85149;
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+  --text: #e6edf3;
+  --text-sub: #8b949e;
+  --text-muted: #484f58;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Outfit',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* ── BACKGROUND ── */
+.bg-grid {
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(240,165,0,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(88,166,255,0.05) 0%, transparent 50%),
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+}
+
+/* ── VIEWS ── */
+.view { display:none; position:relative; z-index:1; min-height:100vh; }
+.view.active { display:flex; }
+
+/* ════════════════════════════════════════
+   LOGIN PAGE
+════════════════════════════════════════ */
+#view-login {
+  align-items:center; justify-content:center; padding:24px;
+  flex-direction:column;
+}
+.login-card {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:20px; padding:48px 44px; width:100%; max-width:440px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.login-logo { display:flex; align-items:center; gap:12px; margin-bottom:36px; }
+.login-logo-icon {
+  width:46px; height:46px; border-radius:12px;
+  background:linear-gradient(135deg,var(--gold),#ef4444);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.login-logo h1 { font-size:1.25rem; font-weight:800; letter-spacing:-0.5px; }
+.login-logo p { font-size:0.72rem; color:var(--text-sub); font-family:'JetBrains Mono',monospace; }
+.tab-switcher {
+  display:flex; background:var(--surface2); border-radius:10px;
+  padding:4px; margin-bottom:28px; gap:4px;
+}
+.tab-btn {
+  flex:1; padding:9px; border:none; background:transparent;
+  color:var(--text-sub); font-family:'Outfit',sans-serif; font-size:0.85rem;
+  font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s;
+}
+.tab-btn.active { background:var(--surface3); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.field { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.field label { font-size:0.76rem; font-weight:600; color:var(--text-sub); letter-spacing:0.3px; }
+.field input, .field select {
+  background:var(--surface2); border:1px solid var(--border2); border-radius:10px;
+  padding:12px 16px; color:var(--text); font-family:'Outfit',sans-serif; font-size:0.9rem;
+  outline:none; transition:border-color 0.2s;
+}
+.field input:focus, .field select:focus { border-color:var(--gold); }
+.field input::placeholder { color:var(--text-muted); }
+.btn-primary {
+  width:100%; padding:13px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,var(--gold),#ef4444);
+  color:#000; font-family:'Outfit',sans-serif; font-size:0.92rem;
+  font-weight:700; cursor:pointer; transition:all 0.2s; margin-top:8px;
+}
+.btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+.login-divider { text-align:center; color:var(--text-muted); font-size:0.75rem; margin:16px 0; position:relative; }
+.login-divider::before, .login-divider::after {
+  content:''; position:absolute; top:50%; width:42%; height:1px; background:var(--border);
+}
+.login-divider::before { left:0; }
+.login-divider::after { right:0; }
+.demo-chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+.demo-chip {
+  padding:6px 14px; border:1px solid var(--border2); border-radius:20px;
+  font-size:0.75rem; color:var(--text-sub); cursor:pointer; transition:all 0.15s; background:var(--surface2);
+}
+.demo-chip:hover { border-color:var(--gold); color:var(--gold); }
+.msg { padding:10px 14px; border-radius:8px; font-size:0.82rem; margin-bottom:14px; display:none; }
+.msg.error { background:rgba(248,81,73,0.12); border:1px solid rgba(248,81,73,0.3); color:#f85149; display:block; }
+.msg.success { background:rgba(63,185,80,0.12); border:1px solid rgba(63,185,80,0.3); color:#3fb950; display:block; }
+
+/* ════════════════════════════════════════
+   SHARED SHELL
+════════════════════════════════════════ */
+.shell { flex:1; display:flex; flex-direction:column; }
+.topbar {
+  height:58px; background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; position:sticky; top:0; z-index:100;
+}
+.topbar-left { display:flex; align-items:center; gap:10px; }
+.topbar-logo { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--gold),#ef4444); display:flex; align-items:center; justify-content:center; font-size:16px; }
+.topbar-title { font-weight:700; font-size:0.95rem; }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--purple)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#000; cursor:pointer; }
+.badge { padding:3px 9px; border-radius:12px; font-size:0.7rem; font-weight:700; }
+.badge-admin { background:rgba(240,165,0,0.15); color:var(--gold); border:1px solid rgba(240,165,0,0.3); }
+.badge-user { background:rgba(88,166,255,0.12); color:var(--blue); border:1px solid rgba(88,166,255,0.25); }
+.btn-sm { padding:6px 14px; border-radius:8px; font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; border:1px solid var(--border2); background:transparent; color:var(--text-sub); transition:all 0.15s; }
+.btn-sm:hover { border-color:var(--red); color:var(--red); }
+.content { flex:1; padding:28px 24px; max-width:1200px; width:100%; margin:0 auto; }
+
+/* ════════════════════════════════════════
+   USER DASHBOARD
+════════════════════════════════════════ */
+#view-user { flex-direction:column; }
+.dash-greeting { margin-bottom:24px; }
+.dash-greeting h2 { font-size:1.5rem; font-weight:800; letter-spacing:-0.5px; }
+.dash-greeting p { color:var(--text-sub); font-size:0.88rem; margin-top:4px; }
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:28px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px;
+  position:relative; overflow:hidden; transition:border-color 0.2s;
+}
+.stat-card:hover { border-color:var(--border2); }
+.stat-card .sc-label { font-size:0.72rem; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px; }
+.stat-card .sc-val { font-size:1.5rem; font-weight:800; font-family:'JetBrains Mono',monospace; }
+.stat-card .sc-sub { font-size:0.75rem; color:var(--text-muted); margin-top:4px; }
+.stat-card.gold { border-color:rgba(240,165,0,0.3); background:linear-gradient(135deg,rgba(240,165,0,0.05),transparent); }
+.stat-card.green { border-color:rgba(63,185,80,0.3); }
+.stat-card.red { border-color:rgba(248,81,73,0.3); }
+.section-title { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-sub); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.action-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:28px; }
+.action-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 20px;
+  cursor:pointer; transition:all 0.2s; text-decoration:none; display:block;
+}
+.action-card:hover { border-color:var(--gold); transform:translateY(-2px); background:var(--surface2); }
+.action-card .ac-icon { font-size:1.8rem; margin-bottom:12px; }
+.action-card .ac-title { font-weight:700; font-size:0.92rem; margin-bottom:5px; }
+.action-card .ac-desc { font-size:0.78rem; color:var(--text-sub); line-height:1.5; }
+.returns-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.rt-head { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 120px; padding:12px 18px; background:var(--surface2); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-sub); }
+.rt-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 120px; padding:14px 18px; border-top:1px solid var(--border); font-size:0.84rem; align-items:center; transition:background 0.15s; }
+.rt-row:hover { background:var(--surface2); }
+.status-pill { padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-block; }
+.status-draft { background:rgba(139,148,158,0.15); color:var(--text-sub); }
+.status-filed { background:rgba(63,185,80,0.15); color:var(--green); }
+.status-pending { background:rgba(240,165,0,0.15); color:var(--gold); }
+.empty-state { padding:48px; text-align:center; color:var(--text-muted); }
+.empty-state .es-icon { font-size:3rem; margin-bottom:12px; }
+.empty-state p { font-size:0.88rem; }
+
+/* ════════════════════════════════════════
+   ADMIN DASHBOARD
+════════════════════════════════════════ */
+#view-admin { flex-direction:column; }
+.admin-nav {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; gap:0; padding:0 24px; overflow-x:auto;
+}
+.admin-nav-btn {
+  padding:14px 20px; border:none; background:transparent;
+  color:var(--text-sub); font-family:'Outfit',sans-serif; font-size:0.84rem;
+  font-weight:600; cursor:pointer; border-bottom:2px solid transparent;
+  transition:all 0.15s; white-space:nowrap;
+}
+.admin-nav-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.admin-tab { display:none; }
+.admin-tab.active { display:block; }
+
+/* Analytics Cards */
+.analytics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:28px; }
+.ana-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px;
+  position:relative; overflow:hidden;
+}
+.ana-card .ana-label { font-size:0.72rem; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px; }
+.ana-card .ana-val { font-size:2rem; font-weight:800; font-family:'JetBrains Mono',monospace; }
+.ana-card .ana-delta { font-size:0.75rem; margin-top:5px; }
+.ana-card .ana-delta.up { color:var(--green); }
+.ana-card .ana-delta.down { color:var(--red); }
+.ana-bar { height:4px; border-radius:2px; margin-top:12px; background:var(--surface2); overflow:hidden; }
+.ana-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--gold),#ef4444); }
+
+/* Charts */
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+@media(max-width:700px) { .charts-grid { grid-template-columns:1fr; } }
+.chart-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; }
+.chart-card h3 { font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-sub); margin-bottom:18px; }
+.bar-chart { display:flex; align-items:flex-end; gap:8px; height:140px; padding-bottom:28px; position:relative; }
+.bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+.bar { width:100%; border-radius:4px 4px 0 0; transition:height 0.6s ease; min-height:4px; background:linear-gradient(180deg,var(--gold),rgba(240,165,0,0.4)); }
+.bar-label { font-size:0.65rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; white-space:nowrap; }
+.bar-val { font-size:0.65rem; color:var(--text-sub); font-weight:600; }
+.donut-wrap { display:flex; align-items:center; gap:24px; }
+.donut-legend { display:flex; flex-direction:column; gap:10px; }
+.donut-legend-item { display:flex; align-items:center; gap:8px; font-size:0.8rem; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* Users Table */
+.users-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+.search-input {
+  background:var(--surface2); border:1px solid var(--border2); border-radius:9px;
+  padding:9px 14px; color:var(--text); font-family:'Outfit',sans-serif; font-size:0.85rem;
+  outline:none; width:260px; transition:border-color 0.2s;
+}
+.search-input:focus { border-color:var(--gold); }
+.users-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.ut-head { display:grid; grid-template-columns:2fr 2fr 1fr 1fr 1fr 100px; padding:11px 18px; background:var(--surface2); font-size:0.71rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-sub); }
+.ut-row { display:grid; grid-template-columns:2fr 2fr 1fr 1fr 1fr 100px; padding:14px 18px; border-top:1px solid var(--border); font-size:0.83rem; align-items:center; transition:background 0.15s; }
+.ut-row:hover { background:var(--surface2); }
+.btn-icon { width:30px; height:30px; border-radius:7px; border:1px solid var(--border2); background:transparent; color:var(--text-sub); font-size:0.85rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.btn-icon:hover { border-color:var(--blue); color:var(--blue); }
+.btn-icon.danger:hover { border-color:var(--red); color:var(--red); }
+
+/* Activity Feed */
+.activity-list { display:flex; flex-direction:column; gap:0; background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.activity-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); font-size:0.83rem; }
+.activity-item:last-child { border-bottom:none; }
+.act-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.act-icon.login { background:rgba(88,166,255,0.12); }
+.act-icon.file { background:rgba(63,185,80,0.12); }
+.act-icon.reg { background:rgba(188,140,255,0.12); }
+.act-icon.export { background:rgba(240,165,0,0.12); }
+.act-body { flex:1; }
+.act-body strong { color:var(--text); }
+.act-body span { color:var(--text-sub); }
+.act-time { font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; display:none; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:28px; width:100%; max-width:480px; animation:slideUp 0.25s ease; }
+.modal h3 { font-size:1.05rem; font-weight:700; margin-bottom:20px; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+.btn-cancel { padding:9px 20px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--text-sub); font-family:'Outfit',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; }
+.btn-danger { padding:9px 20px; border-radius:8px; border:none; background:var(--red); color:#fff; font-family:'Outfit',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; }
+.btn-save { padding:9px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--gold),#ef4444); color:#000; font-family:'Outfit',sans-serif; font-size:0.85rem; font-weight:700; cursor:pointer; }
+
+/* Tooltip */
+.tooltip { position:relative; }
+.tooltip:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2333; border:1px solid var(--border2); color:var(--text); font-size:0.72rem; padding:5px 10px; border-radius:6px; white-space:nowrap; z-index:300; pointer-events:none; }
+
+/* Responsive */
+@media(max-width:600px) {
+  .ut-head, .ut-row { grid-template-columns:2fr 1fr 80px; }
+  .ut-head span:nth-child(2), .ut-row span:nth-child(2),
+  .ut-head span:nth-child(3), .ut-row span:nth-child(3),
+  .ut-head span:nth-child(4), .ut-row span:nth-child(4) { display:none; }
+  .rt-head, .rt-row { grid-template-columns:1fr 1fr 100px; }
+  .rt-head span:nth-child(2), .rt-row span:nth-child(2),
+  .rt-head span:nth-child(3), .rt-row span:nth-child(3) { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div class="view active" id="view-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🇮🇳</div>
+      <div>
+        <h1>ITR Portal</h1>
+        <p>India Income Tax Returns</p>
+      </div>
+    </div>
+
+    <div class="tab-switcher">
+      <button class="tab-btn active" id="tab-login" onclick="switchLoginTab('login')">Sign In</button>
+      <button class="tab-btn" id="tab-register" onclick="switchLoginTab('register')">Register</button>
+    </div>
+
+    <div id="login-msg" class="msg"></div>
+
+    <!-- Sign In Form -->
+    <div id="form-login">
+      <div class="field">
+        <label>Email Address</label>
+        <input id="login-email" type="email" placeholder="you@email.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="login-password" type="password" placeholder="Enter your password"/>
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+
+      <div class="login-divider">Quick Demo Access</div>
+      <div class="demo-chips">
+        <div class="demo-chip" onclick="fillDemo('admin@itr.gov.in','Admin@123')">👑 Admin</div>
+        <div class="demo-chip" onclick="fillDemo('rahul@email.com','User@123')">👤 User 1</div>
+        <div class="demo-chip" onclick="fillDemo('priya@email.com','User@123')">👤 User 2</div>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="form-register" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field"><label>First Name</label><input id="reg-first" type="text" placeholder="Rahul"/></div>
+        <div class="field"><label>Last Name</label><input id="reg-last" type="text" placeholder="Sharma"/></div>
+      </div>
+      <div class="field"><label>Email Address</label><input id="reg-email" type="email" placeholder="you@email.com"/></div>
+      <div class="field"><label>PAN Number</label><input id="reg-pan" type="text" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;"/></div>
+      <div class="field"><label>Password</label><input id="reg-password" type="password" placeholder="Min 8 characters"/></div>
+      <div class="field"><label>Confirm Password</label><input id="reg-confirm" type="password" placeholder="Repeat password"/></div>
+      <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ USER DASHBOARD ══════════════ -->
+<div class="view" id="view-user">
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">🇮🇳</div>
+        <span class="topbar-title">ITR Portal</span>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-user">Taxpayer</span>
+        <div class="avatar" id="user-avatar" title="Profile">R</div>
+        <button class="btn-sm" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="dash-greeting">
+        <h2 id="user-greeting">Good morning, Rahul 👋</h2>
+        <p id="user-subline">FY 2024–25 · AY 2025–26 · PAN: ABCDE1234F</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card gold">
+          <div class="sc-label">Returns Filed</div>
+          <div class="sc-val" id="u-returns-count">0</div>
+          <div class="sc-sub">across all assessment years</div>
+        </div>
+        <div class="stat-card green">
+          <div class="sc-label">Last Refund</div>
+          <div class="sc-val" id="u-last-refund">₹0</div>
+          <div class="sc-sub" id="u-refund-ay">—</div>
+        </div>
+        <div class="stat-card red">
+          <div class="sc-label">Last Tax Paid</div>
+          <div class="sc-val" id="u-last-tax">₹0</div>
+          <div class="sc-sub" id="u-tax-ay">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-label">Pending Actions</div>
+          <div class="sc-val" id="u-pending">0</div>
+          <div class="sc-sub">drafts / verifications</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-title">Quick Actions</div>
+      <div class="action-grid">
+        <a class="action-card" href="india-itr-dashboard.html" target="_blank">
+          <div class="ac-icon">📝</div>
+          <div class="ac-title">File New Return</div>
+          <div class="ac-desc">Start your ITR for FY 2024–25. Enter income, deductions and capital gains.</div>
+        </a>
+        <div class="action-card" onclick="showComingSoon('Upload Form 16')">
+          <div class="ac-icon">📄</div>
+          <div class="ac-title">Upload Form 16</div>
+          <div class="ac-desc">Upload your employer-issued Form 16 to auto-populate salary details.</div>
+        </div>
+        <div class="action-card" onclick="showComingSoon('Check Refund Status')">
+          <div class="ac-icon">🔍</div>
+          <div class="ac-title">Check Refund Status</div>
+          <div class="ac-desc">Track the status of your income tax refund with your PAN and AY.</div>
+        </div>
+        <div class="action-card" onclick="showComingSoon('Download 26AS')">
+          <div class="ac-icon">📊</div>
+          <div class="ac-title">View 26AS / AIS</div>
+          <div class="ac-desc">View your Annual Information Statement and Tax Credit Statement.</div>
+        </div>
+      </div>
+
+      <!-- My Returns -->
+      <div class="section-title">My Returns</div>
+      <div class="returns-table">
+        <div class="rt-head">
+          <span>Assessment Year</span>
+          <span>Regime</span>
+          <span>Tax / Refund</span>
+          <span>Filed On</span>
+          <span>Status</span>
+        </div>
+        <div id="user-returns-body">
+          <div class="empty-state">
+            <div class="es-icon">📂</div>
+            <p>No returns filed yet. Click <strong>File New Return</strong> to get started.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN DASHBOARD ══════════════ -->
+<div class="view" id="view-admin">
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">🇮🇳</div>
+        <span class="topbar-title">ITR Admin Console</span>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-admin">Admin</span>
+        <div class="avatar" style="background:linear-gradient(135deg,var(--gold),var(--red));">A</div>
+        <button class="btn-sm" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav">
+      <button class="admin-nav-btn active" onclick="switchAdminTab('analytics')">📊 Analytics</button>
+      <button class="admin-nav-btn" onclick="switchAdminTab('users')">👥 Users</button>
+      <button class="admin-nav-btn" onclick="switchAdminTab('returns')">📋 Returns</button>
+      <button class="admin-nav-btn" onclick="switchAdminTab('activity')">🕐 Activity</button>
+    </div>
+
+    <div class="content">
+
+      <!-- ── ANALYTICS TAB ── -->
+      <div class="admin-tab active" id="admin-tab-analytics">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-size:1.2rem;font-weight:800;letter-spacing:-0.3px;">Portal Analytics</h2>
+          <p style="color:var(--text-sub);font-size:0.85rem;margin-top:4px;">Overview of all taxpayer activity on the platform</p>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="ana-card">
+            <div class="ana-label">Total Registered Users</div>
+            <div class="ana-val" id="ana-total-users">0</div>
+            <div class="ana-delta up" id="ana-users-delta">↑ loading...</div>
+            <div class="ana-bar"><div class="ana-bar-fill" id="ana-users-bar" style="width:0%"></div></div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Returns Filed</div>
+            <div class="ana-val" id="ana-total-returns">0</div>
+            <div class="ana-delta up" id="ana-returns-delta">↑ loading...</div>
+            <div class="ana-bar"><div class="ana-bar-fill" style="width:0%;background:linear-gradient(90deg,var(--green),var(--blue))" id="ana-returns-bar"></div></div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Old Regime Filers</div>
+            <div class="ana-val" id="ana-old-regime">0</div>
+            <div class="ana-delta" id="ana-old-pct" style="color:var(--text-sub);">— % of total</div>
+            <div class="ana-bar"><div class="ana-bar-fill" id="ana-old-bar" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--blue))"></div></div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">New Regime Filers</div>
+            <div class="ana-val" id="ana-new-regime">0</div>
+            <div class="ana-delta" id="ana-new-pct" style="color:var(--text-sub);">— % of total</div>
+            <div class="ana-bar"><div class="ana-bar-fill" id="ana-new-bar" style="width:0%;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Total Tax Collected (Filed)</div>
+            <div class="ana-val" id="ana-total-tax">₹0</div>
+            <div class="ana-delta up">across all filed returns</div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Total Refunds Issued</div>
+            <div class="ana-val" id="ana-total-refund">₹0</div>
+            <div class="ana-delta down">pending clearance</div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Avg. Gross Income</div>
+            <div class="ana-val" id="ana-avg-income">₹0</div>
+            <div class="ana-delta" style="color:var(--text-sub);">per taxpayer</div>
+          </div>
+          <div class="ana-card">
+            <div class="ana-label">Active This Month</div>
+            <div class="ana-val" id="ana-active-month">0</div>
+            <div class="ana-delta up">users logged in</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Registrations by Month</h3>
+            <div class="bar-chart" id="reg-chart"></div>
+          </div>
+          <div class="chart-card">
+            <h3>Regime Preference</h3>
+            <div class="donut-wrap" id="regime-donut-wrap">
+              <svg width="120" height="120" viewBox="0 0 36 36" id="regime-donut">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface2)" stroke-width="3.8"/>
+                <circle id="donut-old" cx="18" cy="18" r="15.9" fill="none" stroke="var(--purple)" stroke-width="3.8" stroke-dasharray="0 100" stroke-dashoffset="25" stroke-linecap="round" style="transition:stroke-dasharray 0.8s ease;"/>
+                <circle id="donut-new" cx="18" cy="18" r="15.9" fill="none" stroke="var(--gold)" stroke-width="3.8" stroke-dasharray="0 100" stroke-dashoffset="25" stroke-linecap="round" style="transition:stroke-dasharray 0.8s ease;"/>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-legend-item"><div class="legend-dot" style="background:var(--purple)"></div><span id="donut-old-label">Old Regime: 0%</span></div>
+                <div class="donut-legend-item"><div class="legend-dot" style="background:var(--gold)"></div><span id="donut-new-label">New Regime: 0%</span></div>
+                <div class="donut-legend-item"><div class="legend-dot" style="background:var(--surface2)"></div><span id="donut-none-label">Not Filed: 0%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS TAB ── -->
+      <div class="admin-tab" id="admin-tab-users">
+        <div class="users-toolbar">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:800;">All Users</h2>
+            <p style="color:var(--text-sub);font-size:0.82rem;margin-top:2px;" id="users-count-label">Loading...</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input class="search-input" id="user-search" placeholder="🔍  Search by name, email or PAN..." oninput="filterUsers()"/>
+            <button class="btn-sm" onclick="openAddUserModal()" style="border-color:var(--gold);color:var(--gold);">+ Add User</button>
+          </div>
+        </div>
+        <div class="users-table">
+          <div class="ut-head">
+            <span>Name / Email</span>
+            <span>PAN</span>
+            <span>Role</span>
+            <span>Returns</span>
+            <span>Joined</span>
+            <span>Actions</span>
+          </div>
+          <div id="users-table-body">
+            <div class="empty-state"><div class="es-icon">👥</div><p>Loading users...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RETURNS TAB ── -->
+      <div class="admin-tab" id="admin-tab-returns">
+        <div style="margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:800;">All Filed Returns</h2>
+          <p style="color:var(--text-sub);font-size:0.82rem;margin-top:2px;" id="returns-count-label">Loading...</p>
+        </div>
+        <div class="returns-table">
+          <div class="rt-head" style="grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 100px;">
+            <span>Taxpayer</span>
+            <span>Assessment Year</span>
+            <span>Regime</span>
+            <span>Tax / Refund</span>
+            <span>Status</span>
+            <span>Filed On</span>
+          </div>
+          <div id="admin-returns-body">
+            <div class="empty-state"><div class="es-icon">📋</div><p>Loading returns...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTIVITY TAB ── -->
+      <div class="admin-tab" id="admin-tab-activity">
+        <div style="margin-bottom:16px;">
+          <h2 style="font-size:1.1rem;font-weight:800;">Recent Activity</h2>
+          <p style="color:var(--text-sub);font-size:0.82rem;margin-top:2px;">Live log of user actions on the platform</p>
+        </div>
+        <div class="activity-list" id="activity-list">
+          <div class="empty-state"><div class="es-icon">🕐</div><p>Loading activity...</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <h3 id="modal-title">Add New User</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field"><label>First Name</label><input id="modal-first" type="text" placeholder="Rahul"/></div>
+      <div class="field"><label>Last Name</label><input id="modal-last" type="text" placeholder="Sharma"/></div>
+    </div>
+    <div class="field"><label>Email</label><input id="modal-email" type="email" placeholder="user@email.com"/></div>
+    <div class="field"><label>PAN</label><input id="modal-pan" type="text" placeholder="ABCDE1234F" maxlength="10"/></div>
+    <div class="field">
+      <label>Role</label>
+      <select id="modal-role">
+        <option value="user">User (Taxpayer)</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="field" id="modal-pwd-field"><label>Password</label><input id="modal-password" type="password" placeholder="Min 8 characters"/></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Coming Soon Modal -->
+<div class="modal-overlay" id="coming-soon-modal">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">🚧</div>
+    <h3 id="coming-soon-title">Coming Soon</h3>
+    <p style="color:var(--text-sub);font-size:0.85rem;margin-top:8px;margin-bottom:20px;">This feature is under development and will be available soon.</p>
+    <button class="btn-save" onclick="document.getElementById('coming-soon-modal').classList.remove('open')" style="width:100%;">Got it</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE & STORAGE
+// ══════════════════════════════════════════════
+
+const STORAGE_KEY = 'itr_portal_data';
+
+function getStore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return initStore();
+}
+
+function saveStore(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function initStore() {
+  const now = new Date().toISOString();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const data = {
+    users: [
+      { id:'u1', firstName:'Admin', lastName:'User', email:'admin@itr.gov.in', pan:'ADMIN0001A', password:'Admin@123', role:'admin', joinedAt: new Date(Date.now()-90*86400000).toISOString(), active:true },
+      { id:'u2', firstName:'Rahul', lastName:'Sharma', email:'rahul@email.com', pan:'ABCDE1234F', password:'User@123', role:'user', joinedAt: new Date(Date.now()-60*86400000).toISOString(), active:true },
+      { id:'u3', firstName:'Priya', lastName:'Patel', email:'priya@email.com', pan:'PRIYA5678G', password:'User@123', role:'user', joinedAt: new Date(Date.now()-45*86400000).toISOString(), active:true },
+      { id:'u4', firstName:'Amit', lastName:'Verma', email:'amit@email.com', pan:'AMITV4321H', password:'User@123', role:'user', joinedAt: new Date(Date.now()-30*86400000).toISOString(), active:true },
+      { id:'u5', firstName:'Sneha', lastName:'Reddy', email:'sneha@email.com', pan:'SNEHA9876K', password:'User@123', role:'user', joinedAt: new Date(Date.now()-15*86400000).toISOString(), active:true },
+    ],
+    returns: [
+      { id:'r1', userId:'u2', ay:'2025-26', fy:'2024-25', regime:'new', grossIncome:1250000, taxPayable:87500, refund:0, status:'filed', filedAt: new Date(Date.now()-5*86400000).toISOString() },
+      { id:'r2', userId:'u3', ay:'2025-26', fy:'2024-25', regime:'old', grossIncome:980000, taxPayable:0, refund:12400, status:'filed', filedAt: new Date(Date.now()-8*86400000).toISOString() },
+      { id:'r3', userId:'u2', ay:'2024-25', fy:'2023-24', regime:'new', grossIncome:1100000, taxPayable:52000, refund:0, status:'filed', filedAt: new Date(Date.now()-380*86400000).toISOString() },
+      { id:'r4', userId:'u4', ay:'2025-26', fy:'2024-25', regime:'new', grossIncome:650000, taxPayable:0, refund:8500, status:'draft', filedAt: null },
+      { id:'r5', userId:'u5', ay:'2025-26', fy:'2024-25', regime:'old', grossIncome:1800000, taxPayable:215000, refund:0, status:'pending', filedAt: new Date(Date.now()-2*86400000).toISOString() },
+    ],
+    activity: [
+      { type:'login', userId:'u5', message:'Sneha Reddy logged in', time: new Date(Date.now()-15*60000).toISOString() },
+      { type:'file', userId:'u3', message:'Priya Patel filed return for AY 2025-26', time: new Date(Date.now()-2*3600000).toISOString() },
+      { type:'reg', userId:'u5', message:'Sneha Reddy created an account', time: new Date(Date.now()-3*86400000).toISOString() },
+      { type:'export', userId:'u2', message:'Rahul Sharma exported ITR PDF summary', time: new Date(Date.now()-4*86400000).toISOString() },
+      { type:'login', userId:'u4', message:'Amit Verma logged in', time: new Date(Date.now()-5*86400000).toISOString() },
+      { type:'file', userId:'u2', message:'Rahul Sharma filed return for AY 2025-26', time: new Date(Date.now()-5*86400000).toISOString() },
+      { type:'reg', userId:'u4', message:'Amit Verma created an account', time: new Date(Date.now()-30*86400000).toISOString() },
+    ],
+    registrations: {
+      'Oct':1,'Nov':2,'Dec':1,'Jan':3,'Feb':2,'Mar':4,'Apr':3,'May':2,'Jun':1,'Jul':0,'Aug':1,'Sep':2
+    }
+  };
+  saveStore(data);
+  return data;
+}
+
+let currentUser = null;
+let editingUserId = null;
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+
+function fmt(n) {
+  if (!n && n !== 0) return '0';
+  return Math.round(n).toLocaleString('en-IN');
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff/60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs/24);
+  if (days < 30) return days + 'd ago';
+  return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+}
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('login-msg');
+  el.className = 'msg '+type;
+  el.textContent = msg;
+  setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+function showComingSoon(title) {
+  document.getElementById('coming-soon-title').textContent = title;
+  document.getElementById('coming-soon-modal').classList.add('open');
+}
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+
+function switchLoginTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login' ? '' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? '' : 'none';
+  document.getElementById('login-msg').style.display = 'none';
+}
+
+function fillDemo(email, pass) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = pass;
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  if (!email || !pass) { showMsg('Please enter email and password.'); return; }
+  const store = getStore();
+  const user = store.users.find(u => u.email.toLowerCase() === email && u.password === pass);
+  if (!user) { showMsg('Invalid email or password. Try a demo account below.'); return; }
+  currentUser = user;
+  // Log activity
+  store.activity.unshift({ type:'login', userId:user.id, message:`${user.firstName} ${user.lastName} logged in`, time:new Date().toISOString() });
+  saveStore(store);
+  if (user.role === 'admin') loadAdminDashboard();
+  else loadUserDashboard();
+}
+
+function doRegister() {
+  const first = document.getElementById('reg-first').value.trim();
+  const last = document.getElementById('reg-last').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pan = document.getElementById('reg-pan').value.trim().toUpperCase();
+  const pass = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  if (!first || !last || !email || !pan || !pass) { showMsg('Please fill all fields.'); return; }
+  if (pass.length < 8) { showMsg('Password must be at least 8 characters.'); return; }
+  if (pass !== confirm) { showMsg('Passwords do not match.'); return; }
+  const store = getStore();
+  if (store.users.find(u => u.email.toLowerCase() === email)) { showMsg('Email already registered. Please sign in.'); return; }
+  const newUser = { id:'u'+Date.now(), firstName:first, lastName:last, email, pan, password:pass, role:'user', joinedAt:new Date().toISOString(), active:true };
+  store.users.push(newUser);
+  store.activity.unshift({ type:'reg', userId:newUser.id, message:`${first} ${last} created an account`, time:new Date().toISOString() });
+  // Update registration chart
+  const mo = new Date().toLocaleString('en',{month:'short'});
+  store.registrations[mo] = (store.registrations[mo]||0)+1;
+  saveStore(store);
+  showMsg(`Account created! Welcome ${first}.`, 'success');
+  setTimeout(()=>{
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = pass;
+    switchLoginTab('login');
+  }, 1200);
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  showView('login');
+}
+
+// ══════════════════════════════════════════════
+// USER DASHBOARD
+// ══════════════════════════════════════════════
+
+function loadUserDashboard() {
+  showView('user');
+  const store = getStore();
+  const user = currentUser;
+  const initials = (user.firstName[0]+(user.lastName[0]||'')).toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+  const hour = new Date().getHours();
+  const greet = hour<12?'Good morning':'hour<17'?'Good afternoon':'Good evening';
+  document.getElementById('user-greeting').textContent = `${hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'}, ${user.firstName} 👋`;
+  document.getElementById('user-subline').textContent = `FY 2024–25 · AY 2025–26 · PAN: ${user.pan}`;
+
+  const myReturns = store.returns.filter(r => r.userId === user.id);
+  const filed = myReturns.filter(r => r.status === 'filed');
+  const pending = myReturns.filter(r => r.status !== 'filed').length;
+  document.getElementById('u-returns-count').textContent = filed.length;
+  document.getElementById('u-pending').textContent = pending;
+
+  const refundReturn = filed.filter(r => r.refund > 0).sort((a,b) => new Date(b.filedAt)-new Date(a.filedAt))[0];
+  const taxReturn = filed.filter(r => r.taxPayable > 0).sort((a,b) => new Date(b.filedAt)-new Date(a.filedAt))[0];
+  document.getElementById('u-last-refund').textContent = refundReturn ? '₹'+fmt(refundReturn.refund) : '₹0';
+  document.getElementById('u-refund-ay').textContent = refundReturn ? 'AY '+refundReturn.ay : 'No refunds yet';
+  document.getElementById('u-last-tax').textContent = taxReturn ? '₹'+fmt(taxReturn.taxPayable) : '₹0';
+  document.getElementById('u-tax-ay').textContent = taxReturn ? 'AY '+taxReturn.ay : 'No tax paid';
+
+  const tbody = document.getElementById('user-returns-body');
+  if (myReturns.length === 0) {
+    tbody.innerHTML = `<div class="empty-state"><div class="es-icon">📂</div><p>No returns filed yet. Click <strong>File New Return</strong> to get started.</p></div>`;
+    return;
+  }
+  tbody.innerHTML = myReturns.sort((a,b) => b.ay.localeCompare(a.ay)).map(r => `
+    <div class="rt-row">
+      <span>AY ${r.ay}</span>
+      <span style="text-transform:capitalize;">${r.regime} Regime</span>
+      <span style="color:${r.refund>0?'var(--green)':'var(--text)'};">${r.refund>0?'Refund ₹'+fmt(r.refund):(r.taxPayable>0?'₹'+fmt(r.taxPayable):'Nil')}</span>
+      <span>${r.filedAt ? timeAgo(r.filedAt) : '—'}</span>
+      <span><span class="status-pill status-${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span></span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ══════════════════════════════════════════════
+
+function loadAdminDashboard() {
+  showView('admin');
+  loadAnalytics();
+  loadUsersTable();
+  loadReturnsTable();
+  loadActivity();
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-nav-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['analytics','users','returns','activity'][i]===tab);
+  });
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('admin-tab-'+tab).classList.add('active');
+}
+
+function loadAnalytics() {
+  const store = getStore();
+  const users = store.users.filter(u => u.role !== 'admin');
+  const returns = store.returns;
+  const filed = returns.filter(r => r.status === 'filed');
+  const oldR = filed.filter(r => r.regime === 'old');
+  const newR = filed.filter(r => r.regime === 'new');
+  const totalTax = filed.reduce((s,r) => s+r.taxPayable, 0);
+  const totalRefund = filed.reduce((s,r) => s+r.refund, 0);
+  const avgIncome = filed.length ? Math.round(filed.reduce((s,r) => s+r.grossIncome, 0)/filed.length) : 0;
+  const activeMonth = users.filter(u => {
+    const joined = new Date(u.joinedAt);
+    const now = new Date();
+    return joined.getMonth() === now.getMonth() && joined.getFullYear() === now.getFullYear();
+  }).length;
+
+  document.getElementById('ana-total-users').textContent = users.length;
+  document.getElementById('ana-users-delta').textContent = `↑ ${users.length} registered`;
+  document.getElementById('ana-users-bar').style.width = Math.min(100,users.length*10)+'%';
+  document.getElementById('ana-total-returns').textContent = filed.length;
+  document.getElementById('ana-returns-delta').textContent = `↑ ${returns.filter(r=>r.status!=='filed').length} pending`;
+  document.getElementById('ana-returns-bar').style.width = Math.min(100,filed.length*15)+'%';
+
+  const oldPct = filed.length ? Math.round(oldR.length/filed.length*100) : 0;
+  const newPct = filed.length ? Math.round(newR.length/filed.length*100) : 0;
+  document.getElementById('ana-old-regime').textContent = oldR.length;
+  document.getElementById('ana-old-pct').textContent = oldPct+'% of total';
+  document.getElementById('ana-old-bar').style.width = oldPct+'%';
+  document.getElementById('ana-new-regime').textContent = newR.length;
+  document.getElementById('ana-new-pct').textContent = newPct+'% of total';
+  document.getElementById('ana-new-bar').style.width = newPct+'%';
+  document.getElementById('ana-total-tax').textContent = '₹'+fmt(totalTax);
+  document.getElementById('ana-total-refund').textContent = '₹'+fmt(totalRefund);
+  document.getElementById('ana-avg-income').textContent = '₹'+fmt(avgIncome);
+  document.getElementById('ana-active-month').textContent = activeMonth || users.length;
+
+  // Bar chart
+  const months = ['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+  const regs = store.registrations;
+  const maxReg = Math.max(...months.map(m => regs[m]||0), 1);
+  document.getElementById('reg-chart').innerHTML = months.map(m => {
+    const val = regs[m]||0;
+    const h = Math.round((val/maxReg)*100);
+    return `<div class="bar-wrap">
+      <div class="bar-val">${val||''}</div>
+      <div class="bar" style="height:${h}%"></div>
+      <div class="bar-label">${m}</div>
+    </div>`;
+  }).join('');
+
+  // Donut chart
+  const nonFiled = users.length - filed.length;
+  const total = users.length || 1;
+  const oldDash = (oldR.length/total*100).toFixed(1);
+  const newDash = (newR.length/total*100).toFixed(1);
+  // offset: old starts at top (offset=25), new starts after old
+  document.getElementById('donut-old').setAttribute('stroke-dasharray', `${oldDash} ${100-oldDash}`);
+  document.getElementById('donut-new').setAttribute('stroke-dasharray', `${newDash} ${100-newDash}`);
+  const oldOffset = 25;
+  const newOffset = 25 - parseFloat(oldDash);
+  document.getElementById('donut-old').setAttribute('stroke-dashoffset', oldOffset);
+  document.getElementById('donut-new').setAttribute('stroke-dashoffset', newOffset);
+  document.getElementById('donut-old-label').textContent = `Old Regime: ${Math.round(oldR.length/total*100)}%`;
+  document.getElementById('donut-new-label').textContent = `New Regime: ${Math.round(newR.length/total*100)}%`;
+  document.getElementById('donut-none-label').textContent = `Not Filed: ${Math.round(nonFiled/total*100)}%`;
+}
+
+let allUsers = [];
+function loadUsersTable(filter='') {
+  const store = getStore();
+  allUsers = store.users;
+  const filtered = filter ? allUsers.filter(u =>
+    (u.firstName+' '+u.lastName).toLowerCase().includes(filter.toLowerCase()) ||
+    u.email.toLowerCase().includes(filter.toLowerCase()) ||
+    (u.pan||'').toLowerCase().includes(filter.toLowerCase())
+  ) : allUsers;
+  document.getElementById('users-count-label').textContent = `${filtered.length} of ${allUsers.length} users`;
+  const tbody = document.getElementById('users-table-body');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<div class="empty-state"><div class="es-icon">👥</div><p>No users found.</p></div>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(u => {
+    const uReturns = store.returns.filter(r => r.userId === u.id).length;
+    return `<div class="ut-row">
+      <span>
+        <div style="font-weight:600;">${u.firstName} ${u.lastName}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">${u.email}</div>
+      </span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">${u.pan||'—'}</span>
+      <span><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></span>
+      <span>${uReturns}</span>
+      <span style="font-size:0.78rem;color:var(--text-muted);">${timeAgo(u.joinedAt)}</span>
+      <span style="display:flex;gap:6px;">
+        <button class="btn-icon tooltip" data-tip="Edit" onclick="openEditUserModal('${u.id}')">✏️</button>
+        ${u.id !== currentUser?.id ? `<button class="btn-icon danger tooltip" data-tip="Delete" onclick="deleteUser('${u.id}')">🗑️</button>` : ''}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+function filterUsers() {
+  loadUsersTable(document.getElementById('user-search').value);
+}
+
+function loadReturnsTable() {
+  const store = getStore();
+  const returns = store.returns;
+  document.getElementById('returns-count-label').textContent = `${returns.length} total returns`;
+  const tbody = document.getElementById('admin-returns-body');
+  if (returns.length === 0) {
+    tbody.innerHTML = `<div class="empty-state"><div class="es-icon">📋</div><p>No returns found.</p></div>`;
+    return;
+  }
+  tbody.innerHTML = returns.sort((a,b) => (b.filedAt||'').localeCompare(a.filedAt||'')).map(r => {
+    const user = store.users.find(u => u.id === r.userId);
+    return `<div class="rt-row" style="grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 100px;">
+      <span>
+        <div style="font-weight:600;">${user ? user.firstName+' '+user.lastName : 'Unknown'}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">${user ? user.pan : '—'}</div>
+      </span>
+      <span>AY ${r.ay}</span>
+      <span style="text-transform:capitalize;">${r.regime}</span>
+      <span style="color:${r.refund>0?'var(--green)':'var(--text)'};">
+        ${r.refund>0?'↑ ₹'+fmt(r.refund) : r.taxPayable>0?'₹'+fmt(r.taxPayable):'Nil'}
+      </span>
+      <span><span class="status-pill status-${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span></span>
+      <span style="font-size:0.78rem;color:var(--text-muted);">${r.filedAt ? timeAgo(r.filedAt) : '—'}</span>
+    </div>`;
+  }).join('');
+}
+
+function loadActivity() {
+  const store = getStore();
+  const list = document.getElementById('activity-list');
+  if (store.activity.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="es-icon">🕐</div><p>No activity yet.</p></div>`;
+    return;
+  }
+  list.innerHTML = store.activity.slice(0,20).map(a => {
+    const icons = { login:'🔐', file:'📝', reg:'✅', export:'📤' };
+    return `<div class="activity-item">
+      <div class="act-icon ${a.type}">${icons[a.type]||'ℹ️'}</div>
+      <div class="act-body">${a.message}</div>
+      <div class="act-time">${timeAgo(a.time)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// USER CRUD
+// ══════════════════════════════════════════════
+
+function openAddUserModal() {
+  editingUserId = null;
+  document.getElementById('modal-title').textContent = 'Add New User';
+  document.getElementById('modal-first').value = '';
+  document.getElementById('modal-last').value = '';
+  document.getElementById('modal-email').value = '';
+  document.getElementById('modal-pan').value = '';
+  document.getElementById('modal-role').value = 'user';
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-pwd-field').style.display = '';
+  document.getElementById('user-modal').classList.add('open');
+}
+
+function openEditUserModal(userId) {
+  const store = getStore();
+  const user = store.users.find(u => u.id === userId);
+  if (!user) return;
+  editingUserId = userId;
+  document.getElementById('modal-title').textContent = 'Edit User';
+  document.getElementById('modal-first').value = user.firstName;
+  document.getElementById('modal-last').value = user.lastName;
+  document.getElementById('modal-email').value = user.email;
+  document.getElementById('modal-pan').value = user.pan || '';
+  document.getElementById('modal-role').value = user.role;
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-pwd-field').style.display = '';
+  document.getElementById('user-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('user-modal').classList.remove('open');
+}
+
+function saveUser() {
+  const first = document.getElementById('modal-first').value.trim();
+  const last = document.getElementById('modal-last').value.trim();
+  const email = document.getElementById('modal-email').value.trim().toLowerCase();
+  const pan = document.getElementById('modal-pan').value.trim().toUpperCase();
+  const role = document.getElementById('modal-role').value;
+  const pass = document.getElementById('modal-password').value;
+  if (!first || !last || !email) { alert('Please fill Name and Email.'); return; }
+  const store = getStore();
+  if (editingUserId) {
+    const idx = store.users.findIndex(u => u.id === editingUserId);
+    if (idx >= 0) {
+      store.users[idx] = { ...store.users[idx], firstName:first, lastName:last, email, pan, role };
+      if (pass) store.users[idx].password = pass;
+    }
+  } else {
+    if (!pass || pass.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    if (store.users.find(u => u.email.toLowerCase() === email)) { alert('Email already exists.'); return; }
+    store.users.push({ id:'u'+Date.now(), firstName:first, lastName:last, email, pan, password:pass, role, joinedAt:new Date().toISOString(), active:true });
+  }
+  saveStore(store);
+  closeModal();
+  loadUsersTable();
+  loadAnalytics();
+}
+
+function deleteUser(userId) {
+  if (!confirm('Delete this user? This cannot be undone.')) return;
+  const store = getStore();
+  store.users = store.users.filter(u => u.id !== userId);
+  store.returns = store.returns.filter(r => r.userId !== userId);
+  saveStore(store);
+  loadUsersTable();
+  loadAnalytics();
+  loadReturnsTable();
+}
+
+// Auto-init
+window.onload = () => {};
+</script>
+</body>
+</html>

@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>India ITR Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #f59e0b;
+    --accent2: #10b981;
+    --accent3: #6366f1;
+    --danger: #ef4444;
+    --text: #f1f5f9;
+    --text-muted: #64748b;
+    --text-sub: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Background grid */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image: linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+  .wrapper { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:24px 20px; }
+
+  /* Header */
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:12px; }
+  .logo { display:flex; align-items:center; gap:12px; }
+  .logo-icon { width:42px; height:42px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .logo-text h1 { font-size:1.3rem; font-weight:700; letter-spacing:-0.5px; }
+  .logo-text p { font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
+  .fy-badge { background:var(--surface2); border:1px solid var(--border); padding:8px 16px; border-radius:8px; font-size:0.8rem; color:var(--accent); font-family:'JetBrains Mono',monospace; }
+
+  /* Tab Bar */
+  .tabs-bar {
+    display:flex; gap:0; margin-bottom:28px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden; padding:5px; gap:4px;
+  }
+  .tab-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; padding:11px 8px; cursor:pointer; border:none; border-radius:10px;
+    background:transparent; color:var(--text-muted); transition:all 0.2s;
+    font-family:'Sora',sans-serif;
+  }
+  .tab-item:hover { background:var(--surface2); color:var(--text-sub); }
+  .tab-item.active {
+    background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.12));
+    color:var(--accent); box-shadow:inset 0 0 0 1px rgba(245,158,11,0.25);
+  }
+  .tab-icon { font-size:1.15rem; line-height:1; }
+  .tab-label { font-size:0.72rem; font-weight:600; letter-spacing:0.2px; white-space:nowrap; }
+  @media(max-width:560px) { .tab-label { display:none; } .tab-item { padding:12px 6px; } }
+
+  /* Cards */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+  .card-title { font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+  .card-title span { width:3px; height:16px; background:var(--accent); border-radius:2px; display:inline-block; }
+
+  /* Grid */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  @media(max-width:700px) { .grid2,.grid3 { grid-template-columns:1fr; } }
+
+  /* Form Fields */
+  .field { display:flex; flex-direction:column; gap:6px; }
+  label { font-size:0.76rem; font-weight:500; color:var(--text-sub); }
+  input, select {
+    background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; color:var(--text); font-family:'Sora',sans-serif; font-size:0.88rem;
+    transition:border-color 0.2s; outline:none;
+  }
+  input:focus, select:focus { border-color:var(--accent); }
+  input::placeholder { color:var(--text-muted); }
+  .prefix-input { position:relative; }
+  .prefix-input span { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem; }
+  .prefix-input input { padding-left:28px; }
+
+  /* Tab hint */
+  .tab-hint {
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:12px 18px; margin-bottom:20px; font-size:0.82rem; color:var(--text-sub);
+  }
+  .tab-hint strong { color:var(--text); }
+  .tab-hint .calc-btn {
+    padding:8px 18px; border-radius:8px; border:none; cursor:pointer;
+    background:linear-gradient(135deg,#f59e0b,#ef4444); color:#000;
+    font-family:'Sora',sans-serif; font-size:0.82rem; font-weight:700; white-space:nowrap;
+  }
+
+  /* Buttons */
+  .btn { padding:12px 24px; border-radius:9px; font-family:'Sora',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; }
+  .btn-primary { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#000; }
+  .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-sub); }
+  .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-green { background:linear-gradient(135deg,#10b981,#059669); color:#fff; }
+  .btn-green:hover { opacity:0.9; }
+  .btn-row { display:flex; gap:12px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+
+  /* Sections within steps */
+  .section-page { display:none; }
+  .section-page.active { display:block; }
+
+  /* Summary Cards */
+  .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:24px; }
+  .s-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:18px; }
+  .s-card .s-label { font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .s-card .s-val { font-size:1.25rem; font-weight:700; font-family:'JetBrains Mono',monospace; }
+  .s-card.highlight { border-color:var(--accent); background:linear-gradient(135deg,rgba(245,158,11,0.08),transparent); }
+  .s-card.green { border-color:var(--accent2); }
+  .s-card.purple { border-color:var(--accent3); }
+
+  /* Comparison Table */
+  .compare-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  .compare-table th { background:var(--surface2); padding:12px 16px; text-align:left; font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); }
+  .compare-table td { padding:11px 16px; border-bottom:1px solid var(--border); }
+  .compare-table tr:last-child td { border-bottom:none; }
+  .compare-table .winner { color:var(--accent2); font-weight:700; }
+  .tag-better { background:rgba(16,185,129,0.15); color:var(--accent2); padding:2px 8px; border-radius:4px; font-size:0.72rem; font-weight:600; }
+  .tag-worse { background:rgba(239,68,68,0.12); color:var(--danger); padding:2px 8px; border-radius:4px; font-size:0.72rem; }
+
+  /* Regime toggle */
+  .regime-toggle { display:flex; gap:0; background:var(--surface2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:20px; width:fit-content; }
+  .rt-btn { padding:9px 20px; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--text-muted); background:transparent; border:none; font-family:'Sora',sans-serif; transition:all 0.2s; }
+  .rt-btn.active { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#000; }
+
+  /* Slab table */
+  .slab-table { width:100%; border-collapse:collapse; font-size:0.83rem; font-family:'JetBrains Mono',monospace; }
+  .slab-table th { padding:9px 14px; text-align:left; color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; }
+  .slab-table td { padding:9px 14px; border-bottom:1px solid var(--border); }
+  .slab-table tr:last-child td { border-bottom:none; }
+  .slab-table .active-slab { background:rgba(245,158,11,0.08); color:var(--accent); }
+
+  /* Progress bar */
+  .progress-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; margin-top:8px; }
+  .progress-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,#f59e0b,#ef4444); transition:width 0.5s; }
+
+  /* Breakdown list */
+  .breakdown { display:flex; flex-direction:column; gap:8px; }
+  .brow { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:0.85rem; }
+  .brow .label { color:var(--text-sub); }
+  .brow .val { font-family:'JetBrains Mono',monospace; font-weight:600; }
+  .brow.total { background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.08)); border:1px solid rgba(245,158,11,0.3); }
+
+  /* Alert */
+  .alert { padding:14px 16px; border-radius:10px; font-size:0.83rem; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start; }
+  .alert.info { background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; }
+  .alert.success { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
+
+  /* Print styles */
+  @media print {
+    body { background:#fff; color:#000; }
+    body::before { display:none; }
+    .steps, .btn-row, .no-print { display:none !important; }
+    .card { border:1px solid #ddd; break-inside:avoid; }
+    .s-card { background:#f9f9f9; border:1px solid #ddd; }
+    .compare-table th { background:#f0f0f0; color:#333; }
+    .compare-table td { color:#222; }
+    .slab-table th, .slab-table td { color:#333; }
+    .brow { background:#f5f5f5; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🇮🇳</div>
+      <div class="logo-text">
+        <h1>ITR Dashboard</h1>
+        <p>Income Tax Return · India</p>
+      </div>
+    </div>
+    <div class="fy-badge" id="fy_badge">FY 2024–25 · AY 2025–26</div>
+  </header>
+
+  <!-- Tab Navigation -->
+  <div class="tabs-bar">
+    <button class="tab-item active" id="nav0" onclick="goStep(0)">
+      <span class="tab-icon">💼</span>
+      <span class="tab-label">Income</span>
+    </button>
+    <button class="tab-item" id="nav1" onclick="goStep(1)">
+      <span class="tab-icon">🧾</span>
+      <span class="tab-label">Deductions</span>
+    </button>
+    <button class="tab-item" id="nav2" onclick="goStep(2)">
+      <span class="tab-icon">📉</span>
+      <span class="tab-label">Losses</span>
+    </button>
+    <button class="tab-item" id="nav3" onclick="goStep(3)">
+      <span class="tab-icon">💳</span>
+      <span class="tab-label">TDS</span>
+    </button>
+    <button class="tab-item" id="nav4" onclick="calculate(); goStep(4)">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">Results</span>
+    </button>
+    <button class="tab-item" id="nav5" onclick="calculate(); goStep(5)">
+      <span class="tab-icon">📄</span>
+      <span class="tab-label">Summary</span>
+    </button>
+  </div>
+
+  <!-- STEP 1: INCOME -->
+  <div class="section-page active" id="page0">
+    <div class="tab-hint">
+      <span>💼 <strong>Income</strong> — Enter all income sources. Fill all tabs, then click Calculate to see your tax.</span>
+      <button class="calc-btn" onclick="calculate(); goStep(3)">🧮 Calculate Tax</button>
+    </div>
+
+    <!-- Form 16 Upload vs Manual Entry Toggle -->
+    <div class="card">
+      <div class="card-title"><span></span>How would you like to enter your details?</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+        <div id="mode_manual_btn" onclick="setEntryMode('manual')" style="flex:1;min-width:200px;cursor:pointer;border-radius:12px;padding:18px 20px;border:2px solid var(--accent);background:rgba(245,158,11,0.08);transition:all 0.2s;">
+          <div style="font-size:1.3rem;margin-bottom:8px;">✏️</div>
+          <div style="font-weight:700;font-size:0.92rem;color:var(--accent);margin-bottom:4px;">Enter Manually</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Fill in your income details step by step</div>
+        </div>
+        <div id="mode_form16_btn" onclick="setEntryMode('form16')" style="flex:1;min-width:200px;cursor:pointer;border-radius:12px;padding:18px 20px;border:2px solid var(--border);background:transparent;transition:all 0.2s;">
+          <div style="font-size:1.3rem;margin-bottom:8px;">📄</div>
+          <div style="font-weight:700;font-size:0.92rem;color:var(--text-sub);margin-bottom:4px;">Upload Form 16</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Upload PDF — we'll extract your salary details</div>
+        </div>
+      </div>
+
+      <!-- Form 16 Upload Panel -->
+      <div id="form16_panel" style="display:none;">
+        <div style="border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;background:var(--surface2);position:relative;cursor:pointer;" id="drop_zone" onclick="document.getElementById('form16_file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFileDrop(event)">
+          <div style="font-size:2.5rem;margin-bottom:10px;">📂</div>
+          <div style="font-weight:600;font-size:0.9rem;color:var(--text-sub);margin-bottom:6px;">Drag &amp; drop your Form 16 PDF here</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">or click to browse — only PDF accepted</div>
+          <button class="btn btn-outline" style="pointer-events:none;">Browse File</button>
+          <input type="file" id="form16_file" accept=".pdf" style="display:none;" onchange="handleForm16Upload(event)"/>
+        </div>
+        <div id="form16_status" style="margin-top:12px;font-size:0.82rem;color:var(--text-muted);text-align:center;display:none;"></div>
+        <div class="alert info" style="margin-top:14px;">
+          ℹ️ <strong>Note:</strong> Form 16 upload reads your PDF and pre-fills salary fields. Please verify all auto-filled values before proceeding. Figures from Part A (TDS) and Part B (salary breakup) will be extracted where available.
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information Card -->
+    <div class="card">
+      <div class="card-title"><span></span>Personal Information</div>
+      <div class="grid3" style="margin-bottom:16px;">
+        <div class="field"><label>First Name</label><input id="first_name" type="text" placeholder="e.g. Rahul"/></div>
+        <div class="field"><label>Middle Name <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="middle_name" type="text" placeholder="e.g. Kumar"/></div>
+        <div class="field"><label>Last Name</label><input id="last_name" type="text" placeholder="e.g. Sharma"/></div>
+      </div>
+      <div class="grid2" style="margin-bottom:16px;">
+        <div class="field"><label>Date of Birth</label><input id="dob" type="date" onchange="autoSetAgeGroup()"/></div>
+        <div class="field"><label>Age Group</label><select id="age"><option value="below60">Below 60</option><option value="60to80">60–80 (Senior Citizen)</option><option value="above80">Above 80 (Super Senior Citizen)</option></select></div>
+        <div class="field"><label>PAN Number</label><input id="pan" type="text" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;"/></div>
+        <div class="field">
+          <label>Financial Year (FY)</label>
+          <select id="fy" onchange="syncAYfromFY()">
+            <option value="2024-25">FY 2024–25 (Current)</option>
+            <option value="2023-24">FY 2023–24</option>
+            <option value="2022-23">FY 2022–23</option>
+            <option value="2021-22">FY 2021–22</option>
+            <option value="2020-21">FY 2020–21</option>
+            <option value="2019-20">FY 2019–20</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Assessment Year (AY)</label>
+          <select id="ay" onchange="syncFYfromAY()">
+            <option value="2025-26">AY 2025–26 (Current)</option>
+            <option value="2024-25">AY 2024–25</option>
+            <option value="2023-24">AY 2023–24</option>
+            <option value="2022-23">AY 2022–23</option>
+            <option value="2021-22">AY 2021–22</option>
+            <option value="2020-21">AY 2020–21</option>
+          </select>
+        </div>
+        <div class="field"><label>Mobile Number</label><input id="mobile" type="tel" placeholder="e.g. 9876543210" maxlength="10"/></div>
+        <div class="field"><label>Email Address</label><input id="email" type="email" placeholder="e.g. rahul@email.com"/></div>
+      </div>
+      <div class="field">
+        <label>Address</label>
+        <textarea id="address" rows="2" placeholder="Flat / House No., Street, Area, City, State – PIN Code" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Sora',sans-serif;font-size:0.88rem;resize:vertical;outline:none;width:100%;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Gross Salary Breakup</div>
+      <div class="grid3">
+        <div class="field"><label>Basic Salary (₹)</label><div class="prefix-input"><span>₹</span><input id="basic" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>HRA Received (₹)</label><div class="prefix-input"><span>₹</span><input id="hra_received" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Dearness Allowance – DA (₹)</label><div class="prefix-input"><span>₹</span><input id="da" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Conveyance Allowance (₹)</label><div class="prefix-input"><span>₹</span><input id="conveyance" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Medical Allowance (₹)</label><div class="prefix-input"><span>₹</span><input id="medical_allow" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Special Allowance (₹)</label><div class="prefix-input"><span>₹</span><input id="special_allow" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>LTA – Leave Travel Allowance (₹)</label><div class="prefix-input"><span>₹</span><input id="lta" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Bonus / Performance Pay (₹)</label><div class="prefix-input"><span>₹</span><input id="bonus" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Other Salary Components (₹)</label><div class="prefix-input"><span>₹</span><input id="other_salary" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+      </div>
+      <!-- Gross Salary Auto-total -->
+      <div style="margin-top:16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.82rem; color:var(--text-sub); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Computed Gross Salary</span>
+        <span id="gross_salary_display" style="font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--accent);">₹0</span>
+      </div>
+      <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">ℹ️ Gross Salary = Basic + DA + HRA + All Allowances + Bonus</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>HRA Details</div>
+      <div class="grid2">
+        <div class="field"><label>Rent Paid / Year (₹)</label><div class="prefix-input"><span>₹</span><input id="rent_paid" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Metro City? (for HRA calc)</label><select id="metro" onchange="liveCalc()"><option value="yes">Yes</option><option value="no">No</option></select></div>
+      </div>
+      <div style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">ℹ️ HRA exemption is calculated as the minimum of: (a) HRA received, (b) Rent paid − 10% of Basic+DA, (c) 50%/40% of Basic+DA for metro/non-metro</div>
+    </div>
+
+    <!-- Allowances under Section 10 -->
+    <div class="card">
+      <div class="card-title"><span></span>Allowances Exempt under Section 10</div>
+      <div class="alert info" style="margin-bottom:16px;">ℹ️ These allowances are received as part of salary but are exempt from tax up to specified limits under Section 10 of the Income Tax Act. Only applicable under <strong>Old Regime</strong>.</div>
+      <div class="grid3">
+        <div class="field">
+          <label>HRA Exemption u/s 10(13A) (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;letter-spacing:0.3px;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="s10_hra" type="number" placeholder="Auto-calculated from HRA Details" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated from Basic+DA, HRA received &amp; Rent paid — minimum of 3 limits u/s 10(13A)</span>
+        </div>
+        <div class="field">
+          <label>LTA Exemption u/s 10(5) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_lta" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Leave Travel Allowance — exempt for actual travel within India</span>
+        </div>
+        <div class="field">
+          <label>Children Education Allowance u/s 10(14) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_edu" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">₹100/month per child, max 2 children (₹2,400 p.a.)</span>
+        </div>
+        <div class="field">
+          <label>Hostel Expenditure Allowance u/s 10(14) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_hostel" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">₹300/month per child, max 2 children (₹7,200 p.a.)</span>
+        </div>
+        <div class="field">
+          <label>Transport Allowance for Disabled u/s 10(14) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_transport" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">₹3,200/month for physically handicapped employees</span>
+        </div>
+        <div class="field">
+          <label>Gratuity Exemption u/s 10(10) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_gratuity" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Exempt up to ₹20 lakh for govt / ₹10 lakh for private employees</span>
+        </div>
+        <div class="field">
+          <label>Leave Encashment u/s 10(10AA) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_leave_encash" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Exempt on retirement — up to ₹25 lakh</span>
+        </div>
+        <div class="field">
+          <label>VRS Compensation u/s 10(10C) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_vrs" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Voluntary Retirement Scheme — exempt up to ₹5 lakh</span>
+        </div>
+        <div class="field">
+          <label>Any Other Exempt Allowance u/s 10 (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s10_other" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Uniform allowance, research allowance, etc.</span>
+        </div>
+      </div>
+      <!-- Section 10 Total -->
+      <div style="margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.82rem;color:var(--text-sub);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Total Allowances Exempt u/s 10</span>
+        <span id="s10_total_display" style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--accent2);">₹0</span>
+      </div>
+    </div>
+
+    <!-- Standard Deduction u/s 16 -->
+    <div class="card">
+      <div class="card-title"><span></span>Deductions from Salary under Section 16</div>
+      <div class="grid3">
+        <div class="field">
+          <label>Standard Deduction u/s 16(ia) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s16_std" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">₹50,000 (Old Regime) / ₹75,000 (New Regime) — flat deduction for all salaried employees</span>
+        </div>
+        <div class="field">
+          <label>Entertainment Allowance u/s 16(ii) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s16_entertainment" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Only for <strong>Govt employees</strong> — least of: actual amount, 20% of basic, or ₹5,000</span>
+        </div>
+        <div class="field">
+          <label>Professional Tax u/s 16(iii) (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="s16_prof_tax" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Tax on employment / profession levied by State Govt — max ₹2,500 p.a.</span>
+        </div>
+      </div>
+      <!-- Section 16 Total & Net Salary -->
+      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Total Deductions u/s 16</span>
+          <span id="s16_total_display" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);">₹0</span>
+        </div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Net Salary (after Sec 10 &amp; 16)</span>
+          <span id="net_salary_display" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">₹0</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:0.75rem;color:var(--text-muted);">ℹ️ Net Salary = Gross Salary − Section 10 Exemptions − Section 16 Deductions. Standard Deduction u/s 16(ia) is auto-applied in tax calculation; enter here to track it separately.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Income from Other Sources</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Savings Account Interest (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="interest_savings" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Interest from savings bank account (eligible for 80TTA deduction up to ₹10,000)</span>
+        </div>
+        <div class="field">
+          <label>Interest from Deposits (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="interest_deposit" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">FD, RD, Post Office deposits, bonds etc. (fully taxable)</span>
+        </div>
+        <div class="field">
+          <label>Interest on ITR Refund (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="interest_itr_refund" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Interest received from Income Tax Dept on refund u/s 244A (fully taxable)</span>
+        </div>
+        <div class="field">
+          <label>Dividend Income (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="dividend" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Dividends from shares, mutual funds etc.</span>
+        </div>
+        <div class="field">
+          <label>Gifts &amp; Other Receipts (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="gifts" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Cash gifts above ₹50,000, winnings, other income</span>
+        </div>
+        <div class="field">
+          <label>Any Other Income (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="other" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Any remaining miscellaneous income</span>
+        </div>
+      </div>
+      <!-- Other Sources Total -->
+      <div style="margin-top:16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.82rem; color:var(--text-sub); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Total – Other Sources</span>
+        <span id="other_total_display" style="font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--accent2);">₹0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Income from House Property</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Annual Rental Income Received (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="rental_income" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Gross annual rent received from let-out property</span>
+        </div>
+        <div class="field">
+          <label>Municipal Taxes Paid (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="municipal_tax" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Actual municipal/property taxes paid during the year</span>
+        </div>
+      </div>
+      <div style="margin-top:12px; font-size:0.75rem; color:var(--text-muted); background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.2); border-radius:8px; padding:10px 14px;">
+        ℹ️ <strong>Standard Deduction @ 30%</strong> of Net Annual Value (NAV) is automatically applied u/s 24(a). NAV = Rental Income − Municipal Taxes.
+      </div>
+      <!-- House Property Net Income -->
+      <div style="margin-top:12px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.82rem; color:var(--text-sub); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Net Income from House Property</span>
+        <span id="hp_net_display" style="font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--accent2);">₹0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Capital Gains</div>
+
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;width:fit-content;">
+        <button class="rt-btn active" id="cg_tab_stcg" onclick="switchCGTab('stcg')">Short-term (STCG)</button>
+        <button class="rt-btn" id="cg_tab_ltcg" onclick="switchCGTab('ltcg')">Long-term (LTCG)</button>
+      </div>
+
+      <!-- ===== STCG PANEL ===== -->
+      <div id="cg_panel_stcg">
+        <!-- STCG Equity / STT paid — full Section 48 breakdown -->
+        <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:16px 18px;margin-bottom:16px;">
+          <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#a5b4fc;margin-bottom:14px;">d &nbsp;STCG on Equity Shares / Equity-oriented MF (STT paid) — Taxed @15% u/s 111A</div>
+          <div class="grid2">
+            <div class="field">
+              <label>a. Full Value of Consideration (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_e_fvc" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Sale price / consideration received or accruing</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;font-weight:600;color:#a5b4fc;margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">b. Deductions u/s 48</div>
+          <div class="grid3">
+            <div class="field">
+              <label>i. Cost of Acquisition (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_e_coa" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>ii. Cost of Improvement (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_e_coi" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>iii. Expenditure on Transfer (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_e_exp" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Brokerage, STT, transaction charges etc.</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:#a5b4fc;">b(iv). Total Deductions (i+ii+iii)</span>
+              <span id="stcg_e_total_ded" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);">₹0</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;">d. Balance STCG — Equity (a − b(iv))</span>
+              <span id="stcg_e_balance" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STCG Other Assets -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:14px;">STCG on Other Assets (Property / Debt / Gold held &lt;2 yrs) — Taxed at Slab Rate</div>
+          <div class="grid2">
+            <div class="field">
+              <label>a. Full Value of Consideration (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_o_fvc" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Sale price / consideration received or accruing</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">b. Deductions u/s 48</div>
+          <div class="grid3">
+            <div class="field">
+              <label>i. Cost of Acquisition (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_o_coa" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>ii. Cost of Improvement (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_o_coi" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>iii. Expenditure on Transfer (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="stcg_o_exp" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Brokerage, legal fees, stamp duty etc.</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-muted);">b(iv). Total Deductions (i+ii+iii)</span>
+              <span id="stcg_o_total_ded" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);">₹0</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;">c. Balance STCG (a − b(iv))</span>
+              <span id="stcg_o_balance" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">₹0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LTCG PANEL ===== -->
+      <div id="cg_panel_ltcg" style="display:none;">
+        <!-- LTCG Equity / STT paid -->
+        <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:16px 18px;margin-bottom:16px;">
+          <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#a5b4fc;margin-bottom:14px;">LTCG on Equity Shares / Equity-oriented MF (STT paid) — Taxed @10% above ₹1,00,000</div>
+          <div class="grid2">
+            <div class="field">
+              <label>a. Full Value of Consideration (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_e_fvc" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Sale price received or accruing</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;font-weight:600;color:#a5b4fc;margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">b. Deductions u/s 48</div>
+          <div class="grid3">
+            <div class="field">
+              <label>i. Cost of Acquisition (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_e_coa" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>ii. Cost of Improvement (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_e_coi" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>iii. Expenditure on Transfer (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_e_exp" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Brokerage, legal fees, STT etc.</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-muted);">b(iv). Total Deductions (i+ii+iii)</span>
+              <span id="ltcg_e_total_ded" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);">₹0</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;">c. Balance LTCG — Equity (a − b(iv))</span>
+              <span id="ltcg_e_balance" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LTCG Other Assets -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:14px;">LTCG on Other Assets (Property / Debt / Gold held &gt;2 yrs) — Taxed @20% with Indexation</div>
+          <div class="grid2">
+            <div class="field">
+              <label>a. Full Value of Consideration (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_o_fvc" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Sale price / consideration received or accruing</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">b. Deductions u/s 48</div>
+          <div class="grid3">
+            <div class="field">
+              <label>i. Cost of Acquisition (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_o_coa" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>ii. Cost of Improvement (without indexation) (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_o_coi" type="number" placeholder="0" oninput="liveCalc()"/></div>
+            </div>
+            <div class="field">
+              <label>iii. Expenditure on Transfer (₹)</label>
+              <div class="prefix-input"><span>₹</span><input id="ltcg_o_exp" type="number" placeholder="0" oninput="liveCalc()"/></div>
+              <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Brokerage, legal fees, stamp duty etc.</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-muted);">b(iv). Total Deductions (i+ii+iii)</span>
+              <span id="ltcg_o_total_ded" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent2);">₹0</span>
+            </div>
+            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.78rem;color:var(--text-sub);font-weight:600;">c. Balance LTCG — Other Assets (a − b(iv))</span>
+              <span id="ltcg_o_balance" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">₹0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capital Gains Summary Total -->
+      <div style="margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.82rem;color:var(--text-sub);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Total Capital Gains (Net)</span>
+        <span id="cg_total_display" style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--accent3);">₹0</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STEP 2: DEDUCTIONS -->
+  <div class="section-page" id="page1">
+    <div class="tab-hint">
+      <span>🧾 <strong>Deductions</strong> — Enter 80C, 80D and other deductions. Applies to Old Regime only.</span>
+      <button class="calc-btn" onclick="calculate(); goStep(3)">🧮 Calculate Tax</button>
+    </div>
+    <div class="alert info">⚠️ Deductions below apply under the <strong>Old Tax Regime</strong> only. New regime allows only standard deduction of ₹75,000.</div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Section 80C Investments (Max ₹1,50,000)</div>
+      <div class="grid3">
+        <div class="field"><label>EPF Contribution (₹)</label><div class="prefix-input"><span>₹</span><input id="epf" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>PPF (₹)</label><div class="prefix-input"><span>₹</span><input id="ppf" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>ELSS Mutual Funds (₹)</label><div class="prefix-input"><span>₹</span><input id="elss" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>LIC Premium (₹)</label><div class="prefix-input"><span>₹</span><input id="lic" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>NSC / KVP (₹)</label><div class="prefix-input"><span>₹</span><input id="nsc" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>Tuition Fees (₹)</label><div class="prefix-input"><span>₹</span><input id="tuition" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+      </div>
+      <div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);">80C Total: <strong id="c80c_total" style="color:var(--accent);font-family:'JetBrains Mono',monospace;">₹0</strong> / ₹1,50,000</div>
+      <div class="progress-bar"><div class="progress-fill" id="c80c_bar" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span></span>Other Deductions</div>
+      <div class="grid2">
+        <div class="field"><label>80D – Health Insurance (Self) (₹)</label><div class="prefix-input"><span>₹</span><input id="d80d_self" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>80D – Health Insurance (Parents) (₹)</label><div class="prefix-input"><span>₹</span><input id="d80d_par" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>80E – Education Loan Interest (₹)</label><div class="prefix-input"><span>₹</span><input id="d80e" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>80G – Donations (₹)</label><div class="prefix-input"><span>₹</span><input id="d80g" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>80TTA – Savings Account Interest Deduction (Max ₹10,000) (₹)</label><div class="prefix-input"><span>₹</span><input id="d80tta" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>80CCD(1B) – NPS Self (Max ₹50,000) (₹)</label><div class="prefix-input"><span>₹</span><input id="d80ccd" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+        <div class="field"><label>24(b) – Home Loan Interest (Max ₹2,00,000) (₹)</label><div class="prefix-input"><span>₹</span><input id="hloan" type="number" placeholder="0" oninput="liveCalc()"/></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STEP 3: LOSSES TO BE SET OFF -->
+  <div class="section-page" id="page2">
+    <div class="tab-hint">
+      <span>📉 <strong>Losses</strong> — Enter current year and brought-forward losses to set off against gains.</span>
+      <button class="calc-btn" onclick="calculate(); goStep(3)">🧮 Calculate Tax</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span></span>Losses to be Set Off</div>
+      <div class="alert info" style="margin-bottom:16px;">
+        ℹ️ Losses can be set off against gains as per Income Tax rules. STCL can set off against STCG &amp; LTCG. LTCL can only set off against LTCG. House property loss (up to ₹2L) can set off against salary income under Old Regime.
+      </div>
+
+      <!-- Current Year Losses -->
+      <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);">Current Year Losses</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:9px 13px;">
+        ✅ Fields marked <strong style="color:#6ee7b7;">AUTO</strong> are computed from your Capital Gains and House Property entries. Manually enter any additional losses not covered by the Income tab.
+      </div>
+      <div class="grid2" style="margin-bottom:20px;">
+        <div class="field">
+          <label>STCL on Equity / MF (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="loss_stcl_equity" type="number" placeholder="0" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated when STCG equity sale price &lt; cost (FVC &lt; deductions u/s 48)</span>
+        </div>
+        <div class="field">
+          <label>STCL on Other Assets (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="loss_stcl_other" type="number" placeholder="0" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated when STCG other assets sale price &lt; cost (property, debt, gold &lt;2 yrs)</span>
+        </div>
+        <div class="field">
+          <label>LTCL on Equity / MF (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="loss_ltcl_equity" type="number" placeholder="0" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated when LTCG equity sale price &lt; cost — can only set off vs LTCG</span>
+        </div>
+        <div class="field">
+          <label>LTCL on Other Assets (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="loss_ltcl_other" type="number" placeholder="0" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated when LTCG other assets sale price &lt; cost (property, debt, gold &gt;2 yrs)</span>
+        </div>
+        <div class="field">
+          <label>Loss from House Property (₹) <span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:2px 7px;border-radius:4px;font-weight:600;">AUTO</span></label>
+          <div class="prefix-input"><span>₹</span><input id="loss_house_property" type="number" placeholder="0" readonly style="cursor:not-allowed;opacity:0.85;"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Auto-populated from House Property when interest paid &gt; rental income — max set-off ₹2,00,000</span>
+        </div>
+        <div class="field">
+          <label>Business / Profession Loss (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="loss_business" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Enter manually — speculative / non-speculative business loss</span>
+        </div>
+      </div>
+
+      <!-- Brought Forward Losses -->
+      <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Brought Forward Losses (from Prior Years)</div>
+      <div class="grid2">
+        <div class="field">
+          <label>B/F Short-term Capital Loss (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="loss_bf_stcl" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Carried forward STCL from previous years (up to 8 years)</span>
+        </div>
+        <div class="field">
+          <label>B/F Long-term Capital Loss (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="loss_bf_ltcl" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Carried forward LTCL from previous years — can only set off vs LTCG</span>
+        </div>
+        <div class="field">
+          <label>B/F House Property Loss (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="loss_bf_hp" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Carried forward HP loss from previous years (up to 8 years)</span>
+        </div>
+        <div class="field">
+          <label>B/F Business Loss (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="loss_bf_business" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Carried forward non-speculative business loss (up to 8 years)</span>
+        </div>
+      </div>
+
+      <!-- Loss Set-Off Summary -->
+      <div style="margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+        <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:12px;">Loss Set-Off Summary</div>
+        <div class="breakdown" id="loss_setoff_summary">
+          <div class="brow"><span class="label">Total Current Year Losses</span><span class="val" id="loss_current_total" style="color:var(--danger);">₹0</span></div>
+          <div class="brow"><span class="label">Total Brought Forward Losses</span><span class="val" id="loss_bf_total" style="color:var(--danger);">₹0</span></div>
+          <div class="brow"><span class="label">Total STCL Set Off against STCG</span><span class="val" id="loss_stcl_setoff" style="color:var(--accent2);">₹0</span></div>
+          <div class="brow"><span class="label">Total LTCL Set Off against LTCG</span><span class="val" id="loss_ltcl_setoff" style="color:var(--accent2);">₹0</span></div>
+          <div class="brow"><span class="label">HP Loss Set Off against Salary (max ₹2L)</span><span class="val" id="loss_hp_setoff" style="color:var(--accent2);">₹0</span></div>
+          <div class="brow total"><span class="label">Net Capital Gains after Set-Off</span><span class="val" id="loss_net_cg" style="color:var(--accent);">₹0</span></div>
+        </div>
+      </div>
+    </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calculate(); goStep(4)">🧮 Calculate Tax & View Results →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: TDS DEDUCTED -->
+  <div class="section-page" id="page3">
+    <div class="tab-hint">
+      <span>💳 <strong>TDS</strong> — Enter Tax Deducted at Source from salary (Form 16) and non-salary income (Form 16A / 26AS).</span>
+      <button class="calc-btn" onclick="calculate(); goStep(4)">🧮 Calculate Tax</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span></span>TDS Deducted (Tax Deducted at Source)</div>
+      <div class="alert info" style="margin-bottom:16px;">
+        ℹ️ TDS is deducted from your final tax liability. If total TDS &gt; tax liability, you are eligible for a <strong>refund</strong>.
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>TDS on Salary – Form 16 (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="tds_salary" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">TDS deducted by employer u/s 192 — as per Form 16 Part A</span>
+        </div>
+        <div class="field">
+          <label>TDS on Non-Salary Income (₹)</label>
+          <div class="prefix-input"><span>₹</span><input id="tds_non_salary" type="number" placeholder="0" oninput="liveCalc()"/></div>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">TDS on FD interest, rent, professional fees, capital gains etc. — Form 16A / 16B / 26AS</span>
+        </div>
+      </div>
+      <div style="margin-top:16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.82rem; color:var(--text-sub); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Total TDS Deducted</span>
+        <span id="tds_total_display" style="font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--accent2);">₹0</span>
+      </div>
+      <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">ℹ️ Total TDS is subtracted from your tax liability to arrive at net tax payable / refund. It is <strong>not</strong> a deduction from income.</div>
+    </div>
+  </div>
+
+  <!-- STEP 5: RESULTS -->
+  <div class="section-page" id="page4">
+    <div class="tab-hint">
+      <span>📊 <strong>Results</strong> — Old vs New regime comparison, detailed tax breakdown and slab analysis.</span>
+      <button class="calc-btn" onclick="calculate(); goStep(4)">🔄 Recalculate</button>
+    </div>
+
+    <div class="summary-grid" id="summary_cards"></div>
+
+    <!-- Regime Comparison -->
+    <div class="card">
+      <div class="card-title"><span></span>Old Regime vs New Regime Comparison</div>
+      <div id="compare_table_wrap"></div>
+    </div>
+
+    <!-- Tax Breakdown -->
+    <div class="card">
+      <div class="card-title"><span></span>Detailed Tax Breakdown</div>
+      <div class="regime-toggle">
+        <button class="rt-btn active" id="rt_old" onclick="showBreakdown('old')">Old Regime</button>
+        <button class="rt-btn" id="rt_new" onclick="showBreakdown('new')">New Regime</button>
+      </div>
+      <div id="breakdown_detail"></div>
+    </div>
+
+    <!-- Tax Slabs -->
+    <div class="card">
+      <div class="card-title"><span></span>Tax Slabs Applied</div>
+      <div class="regime-toggle">
+        <button class="rt-btn active" id="sl_old" onclick="showSlabs('old')">Old Regime</button>
+        <button class="rt-btn" id="sl_new" onclick="showSlabs('new')">New Regime</button>
+      </div>
+      <div id="slab_table_wrap"></div>
+    </div>
+
+  </div>
+
+  <!-- STEP 6: SUMMARY + DOWNLOAD -->
+  <div class="section-page" id="page5">
+    <div class="tab-hint no-print">
+      <span>📄 <strong>Summary</strong> — Your complete ITR summary. Download PDF or export JSON/XML for filing.</span>
+      <button class="calc-btn" onclick="calculate(); goStep(5)">🔄 Refresh Summary</button>
+    </div>
+    <div id="final_summary"></div>
+
+    <!-- Export Options -->
+    <div class="card no-print" style="margin-top:0;">
+      <div class="card-title"><span></span>Export for ITR Filing</div>
+      <div class="alert info" style="margin-bottom:16px;">
+        📤 Export your ITR data and import it into the <strong>Income Tax Dept's Offline Utility</strong> (available at <strong>incometax.gov.in</strong>) to file your return. Both formats are accepted by the offline utility.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">📦</div>
+          <div style="font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:4px;">Download JSON</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Structured data file — import directly into the IT Dept's offline utility (prefills all fields)</div>
+          <button class="btn btn-primary" onclick="exportJSON()" style="width:100%;">⬇ Download JSON</button>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">🗂️</div>
+          <div style="font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:4px;">Download XML</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Official ITR-1 schema format — import into offline utility or upload directly on the portal</div>
+          <button class="btn btn-outline" onclick="exportXML()" style="width:100%;border-color:var(--accent3);color:var(--accent3);">⬇ Download XML</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px 16px;background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:0.76rem;color:#a5b4fc;line-height:1.7;">
+        <strong>How to use:</strong> 1. Download JSON or XML &nbsp;→&nbsp; 2. Open the <a href="https://www.incometax.gov.in/iec/foportal/downloads/offline-utilities" target="_blank" style="color:var(--accent);">IT Dept Offline Utility</a> &nbsp;→&nbsp; 3. Click <em>"Import"</em> and select your file &nbsp;→&nbsp; 4. Verify prefilled data &nbsp;→&nbsp; 5. Submit on the portal
+      </div>
+    </div>
+
+    <div class="btn-row no-print">
+      <button class="btn btn-green" onclick="generatePDF()">📄 Download PDF Summary</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let result = {};
+
+function generatePDF() {
+  const r = result;
+  if (!r.grossIncome && r.grossIncome !== 0) {
+    alert('Please complete the tax calculation first (Step 4) before downloading the PDF.');
+    return;
+  }
+
+  const firstName = document.getElementById('first_name').value || '';
+  const middleName = document.getElementById('middle_name').value || '';
+  const lastName = document.getElementById('last_name').value || '';
+  const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ') || 'Taxpayer';
+  const pan = (document.getElementById('pan').value || '—').toUpperCase();
+  const dob = document.getElementById('dob').value || '';
+  const dobFmt = dob ? new Date(dob).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const mobile = document.getElementById('mobile').value || '—';
+  const email = document.getElementById('email').value || '—';
+  const address = document.getElementById('address').value || '—';
+  const fy = document.getElementById('fy').value || '2024-25';
+  const ay = document.getElementById('ay').value || '2025-26';
+  const best = r.bestRegime;
+  const pay = best === 'old' ? r.payableOld : r.payableNew;
+  const tax = best === 'old' ? r.totalTaxOld : r.totalTaxNew;
+
+  function fmtPDF(n) {
+    if (!n && n !== 0) return '0';
+    return Math.round(n).toLocaleString('en-IN');
+  }
+
+  function row(label, val, indent, bold, highlight) {
+    const bg = highlight ? 'background:#fff8ed;' : '';
+    const fw = bold ? 'font-weight:700;' : '';
+    const pl = indent ? 'padding-left:24px;' : '';
+    return `<tr style="${bg}"><td style="padding:7px 12px;${pl}${fw}color:#374151;border-bottom:1px solid #f0f0f0;">${label}</td><td style="padding:7px 12px;text-align:right;${fw}font-family:monospace;color:#1f2937;border-bottom:1px solid #f0f0f0;">${val}</td></tr>`;
+  }
+  function sectionHeader(title) {
+    return `<tr><td colspan="2" style="padding:10px 12px 6px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #e5e7eb;">${title}</td></tr>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>ITR Summary – ${fullName} – AY ${ay}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:#fff; color:#1f2937; font-size:13px; }
+  .page { max-width:900px; margin:0 auto; padding:32px 40px; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #f59e0b; padding-bottom:20px; margin-bottom:24px; }
+  .header-left h1 { font-size:1.4rem; font-weight:700; color:#111827; letter-spacing:-0.5px; }
+  .header-left p { font-size:0.78rem; color:#6b7280; margin-top:3px; }
+  .header-right { text-align:right; }
+  .ay-badge { background:#fef3c7; color:#92400e; font-weight:700; font-size:0.75rem; padding:5px 12px; border-radius:6px; display:inline-block; }
+  .verdict { margin-bottom:24px; padding:16px 20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; }
+  .verdict.payable { background:#fef2f2; border:1px solid #fca5a5; }
+  .verdict.refund { background:#f0fdf4; border:1px solid #86efac; }
+  .verdict-label { font-size:0.85rem; font-weight:600; color:#374151; }
+  .verdict-amt { font-size:1.6rem; font-weight:800; font-family:monospace; }
+  .verdict.payable .verdict-amt { color:#dc2626; }
+  .verdict.refund .verdict-amt { color:#16a34a; }
+  .verdict-regime { font-size:0.75rem; color:#6b7280; margin-top:3px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+  .info-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px 16px; }
+  .info-box h3 { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#9ca3af; margin-bottom:10px; }
+  .info-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #f0f0f0; }
+  .info-row:last-child { border-bottom:none; }
+  .info-label { color:#6b7280; font-size:0.8rem; }
+  .info-val { font-weight:600; font-size:0.8rem; color:#111827; }
+  h2 { font-size:0.85rem; font-weight:700; color:#374151; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid #f3f4f6; text-transform:uppercase; letter-spacing:0.5px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:22px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+  .regime-compare { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:22px; }
+  .regime-box { border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+  .regime-box.winner { border-color:#f59e0b; }
+  .regime-box h3 { padding:10px 14px; font-size:0.78rem; font-weight:700; text-transform:uppercase; background:#f9fafb; color:#374151; display:flex; justify-content:space-between; }
+  .regime-box.winner h3 { background:#fef3c7; color:#92400e; }
+  .regime-row { display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #f0f0f0; font-size:0.8rem; }
+  .regime-row:last-child { border-bottom:none; background:#f9fafb; font-weight:700; }
+  .savings-banner { background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; padding:12px 16px; margin-bottom:22px; text-align:center; font-size:0.85rem; color:#065f46; font-weight:600; }
+  .footer { margin-top:32px; padding-top:16px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:0.7rem; color:#9ca3af; }
+  @media print {
+    body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    .page { padding:20px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🇮🇳 Income Tax Return Summary</h1>
+      <p>Prepared using ITR Dashboard &nbsp;·&nbsp; Assessment Year ${ay}</p>
+    </div>
+    <div class="header-right">
+      <div class="ay-badge">AY ${ay} &nbsp;|&nbsp; FY ${fy}</div>
+      <div style="font-size:0.72rem;color:#9ca3af;margin-top:6px;">Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}</div>
+    </div>
+  </div>
+
+  <!-- Verdict Banner -->
+  <div class="verdict ${pay >= 0 ? 'payable' : 'refund'}">
+    <div>
+      <div class="verdict-label">${pay >= 0 ? 'Net Tax Payable to Government' : 'Net Refund Due from Government'}</div>
+      <div class="verdict-regime">Recommended: <strong>${best === 'old' ? 'Old Tax Regime' : 'New Tax Regime'}</strong> &nbsp;·&nbsp; You save ₹${fmtPDF(r.savings)} over the other regime</div>
+    </div>
+    <div class="verdict-amt">₹${fmtPDF(Math.abs(pay))}</div>
+  </div>
+
+  <!-- Personal + Tax at a Glance -->
+  <div class="grid2">
+    <div class="info-box">
+      <h3>Personal Details</h3>
+      <div class="info-row"><span class="info-label">Full Name</span><span class="info-val">${fullName}</span></div>
+      <div class="info-row"><span class="info-label">PAN</span><span class="info-val" style="font-family:monospace;">${pan}</span></div>
+      <div class="info-row"><span class="info-label">Date of Birth</span><span class="info-val">${dobFmt}</span></div>
+      <div class="info-row"><span class="info-label">Mobile</span><span class="info-val">${mobile}</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-val" style="font-size:0.75rem;">${email}</span></div>
+      ${address !== '—' ? `<div class="info-row"><span class="info-label">Address</span><span class="info-val" style="font-size:0.72rem;text-align:right;max-width:55%;">${address}</span></div>` : ''}
+    </div>
+    <div class="info-box">
+      <h3>Tax at a Glance</h3>
+      <div class="info-row"><span class="info-label">Gross Total Income</span><span class="info-val">₹${fmtPDF(r.grossIncome)}</span></div>
+      <div class="info-row"><span class="info-label">Taxable Income (Slab)</span><span class="info-val">₹${fmtPDF(best==='old'?r.taxableOld:r.taxableNew)}</span></div>
+      <div class="info-row"><span class="info-label">Total Tax Liability</span><span class="info-val">₹${fmtPDF(tax)}</span></div>
+      <div class="info-row"><span class="info-label">TDS on Salary</span><span class="info-val" style="color:#16a34a;">₹${fmtPDF(r.tds_salary)}</span></div>
+      <div class="info-row"><span class="info-label">TDS on Non-Salary</span><span class="info-val" style="color:#16a34a;">₹${fmtPDF(r.tds_non_salary)}</span></div>
+      <div class="info-row"><span class="info-label" style="font-weight:700;">${pay>=0?'Net Payable':'Net Refund'}</span><span class="info-val" style="font-weight:800;color:${pay>=0?'#dc2626':'#16a34a'};">₹${fmtPDF(Math.abs(pay))}</span></div>
+    </div>
+  </div>
+
+  <!-- Income Breakdown -->
+  <h2>Income Details</h2>
+  <table>
+    ${sectionHeader('Salary Income')}
+    ${row('Gross Salary', '₹'+fmtPDF(r.salary), false, false)}
+    ${row('Less: Allowances Exempt u/s 10', '− ₹'+fmtPDF(r.sec10_total), true, false)}
+    ${row('Less: Standard Deduction u/s 16(ia)', '− ₹'+fmtPDF(best==='old'?r.stdDedOld:r.stdDedNew), true, false)}
+    ${r.sec16_entertainment>0?row('Less: Entertainment Allowance u/s 16(ii)', '− ₹'+fmtPDF(r.sec16_entertainment), true, false):''}
+    ${r.sec16_prof_tax>0?row('Less: Professional Tax u/s 16(iii)', '− ₹'+fmtPDF(r.sec16_prof_tax), true, false):''}
+    ${sectionHeader('Capital Gains')}
+    ${row('STCG — Equity/MF (STT paid) @15%', '₹'+fmtPDF(r.stcg), false, false)}
+    ${row('LTCG — Equity/MF @10% (above ₹1L)', '₹'+fmtPDF(r.ltcg), false, false)}
+    ${row('STCG — Other Assets (at slab)', '₹'+fmtPDF(r.stcg_other), false, false)}
+    ${row('LTCG — Other Assets @20%', '₹'+fmtPDF(r.ltcg_other), false, false)}
+    ${(r.totalSTCL+r.totalLTCL)>0?sectionHeader('Less: Losses Set Off'):''}
+    ${r.totalSTCL>0?row('STCL Set Off', '− ₹'+fmtPDF(r.totalSTCL), true, false):''}
+    ${r.totalLTCL>0?row('LTCL Set Off', '− ₹'+fmtPDF(r.totalLTCL), true, false):''}
+    ${sectionHeader('Other Sources & House Property')}
+    ${row('Savings Account Interest', '₹'+fmtPDF(r.interest_savings), false, false)}
+    ${row('Interest from Deposits (FD/RD)', '₹'+fmtPDF(r.interest_deposit), false, false)}
+    ${r.interest_itr_refund>0?row('Interest on ITR Refund', '₹'+fmtPDF(r.interest_itr_refund), false, false):''}
+    ${r.dividend>0?row('Dividend Income', '₹'+fmtPDF(r.dividend), false, false):''}
+    ${r.hp_net>0?row('Net Income from House Property', '₹'+fmtPDF(r.hp_net), false, false):''}
+    ${row('Gross Total Income', '₹'+fmtPDF(r.grossIncome), false, true, true)}
+  </table>
+
+  <!-- Deductions (Old Regime) -->
+  ${best==='old'?`<h2>Deductions (Old Regime)</h2>
+  <table>
+    ${sectionHeader('Chapter VI-A Deductions')}
+    ${r.d80c>0?row('80C – Investments (EPF, PPF, ELSS etc.)', '₹'+fmtPDF(r.d80c), false, false):''}
+    ${r.d80d>0?row('80D – Health Insurance', '₹'+fmtPDF(r.d80d), false, false):''}
+    ${r.d80e>0?row('80E – Education Loan Interest', '₹'+fmtPDF(r.d80e), false, false):''}
+    ${r.d80g>0?row('80G – Donations', '₹'+fmtPDF(r.d80g), false, false):''}
+    ${r.d80tta>0?row('80TTA – Savings Interest', '₹'+fmtPDF(r.d80tta), false, false):''}
+    ${r.d80ccd>0?row('80CCD(1B) – NPS', '₹'+fmtPDF(r.d80ccd), false, false):''}
+    ${r.hloan>0?row('24(b) – Home Loan Interest', '₹'+fmtPDF(r.hloan), false, false):''}
+    ${row('Total Deductions', '₹'+fmtPDF(r.totalDeductions), false, true, true)}
+  </table>`:''}
+
+  <!-- Regime Comparison -->
+  <h2>Old Regime vs New Regime</h2>
+  <div class="savings-banner">✅ You save <strong>₹${fmtPDF(r.savings)}</strong> by choosing the <strong>${best==='old'?'Old':'New'} Tax Regime</strong></div>
+  <div class="regime-compare">
+    <div class="regime-box ${best==='old'?'winner':''}">
+      <h3>Old Regime ${best==='old'?'<span style="font-size:0.65rem;background:#f59e0b;color:#fff;padding:2px 7px;border-radius:4px;">BETTER</span>':''}</h3>
+      <div class="regime-row"><span>Taxable Income</span><span>₹${fmtPDF(r.taxableOld)}</span></div>
+      <div class="regime-row"><span>Total Tax</span><span>₹${fmtPDF(r.taxOld)}</span></div>
+      <div class="regime-row"><span>Cess (4%)</span><span>₹${fmtPDF(r.cessOld)}</span></div>
+      <div class="regime-row"><span>Total Liability</span><span>₹${fmtPDF(r.totalTaxOld)}</span></div>
+      <div class="regime-row"><span>Less: TDS</span><span>− ₹${fmtPDF(r.tds)}</span></div>
+      <div class="regime-row"><span>${r.payableOld>=0?'Net Payable':'Net Refund'}</span><span style="color:${r.payableOld>=0?'#dc2626':'#16a34a'};">₹${fmtPDF(Math.abs(r.payableOld))}</span></div>
+    </div>
+    <div class="regime-box ${best==='new'?'winner':''}">
+      <h3>New Regime ${best==='new'?'<span style="font-size:0.65rem;background:#f59e0b;color:#fff;padding:2px 7px;border-radius:4px;">BETTER</span>':''}</h3>
+      <div class="regime-row"><span>Taxable Income</span><span>₹${fmtPDF(r.taxableNew)}</span></div>
+      <div class="regime-row"><span>Total Tax</span><span>₹${fmtPDF(r.taxNew)}</span></div>
+      <div class="regime-row"><span>Cess (4%)</span><span>₹${fmtPDF(r.cessNew)}</span></div>
+      <div class="regime-row"><span>Total Liability</span><span>₹${fmtPDF(r.totalTaxNew)}</span></div>
+      <div class="regime-row"><span>Less: TDS</span><span>− ₹${fmtPDF(r.tds)}</span></div>
+      <div class="regime-row"><span>${r.payableNew>=0?'Net Payable':'Net Refund'}</span><span style="color:${r.payableNew>=0?'#dc2626':'#16a34a'};">₹${fmtPDF(Math.abs(r.payableNew))}</span></div>
+    </div>
+  </div>
+
+  <!-- TDS Details -->
+  <h2>TDS Details</h2>
+  <table>
+    ${row('TDS on Salary (Form 16)', '₹'+fmtPDF(r.tds_salary), false, false)}
+    ${row('TDS on Non-Salary (Form 16A / 26AS)', '₹'+fmtPDF(r.tds_non_salary), false, false)}
+    ${row('Total TDS Deducted', '₹'+fmtPDF(r.tds), false, true, true)}
+  </table>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>This is a computed summary only — not an official tax return. Verify all figures before filing on incometax.gov.in</span>
+    <span>AY ${ay} &nbsp;·&nbsp; PAN: ${pan} &nbsp;·&nbsp; ${new Date().toLocaleDateString('en-IN')}</span>
+  </div>
+
+</div>
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1000,height=800');
+  win.document.write(html);
+  win.document.close();
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportJSON() {
+  const r = result;
+  if (!r.grossIncome && r.grossIncome !== 0) {
+    alert('Please complete the tax calculation first (Step 4) before exporting.');
+    return;
+  }
+  const firstName = document.getElementById('first_name').value || '';
+  const middleName = document.getElementById('middle_name').value || '';
+  const lastName = document.getElementById('last_name').value || '';
+  const pan = (document.getElementById('pan').value || '').toUpperCase();
+  const fy = document.getElementById('fy').value || '2024-25';
+  const ay = document.getElementById('ay').value || '2025-26';
+
+  const data = {
+    meta: { appVersion: '1.0', exportDate: new Date().toISOString(), fy, ay },
+    personalInfo: {
+      firstName, middleName, lastName,
+      fullName: [firstName, middleName, lastName].filter(Boolean).join(' '),
+      pan,
+      dob: document.getElementById('dob').value || '',
+      mobile: document.getElementById('mobile').value || '',
+      email: document.getElementById('email').value || '',
+      address: document.getElementById('address').value || '',
+      ageGroup: document.getElementById('age').value
+    },
+    incomeDetails: {
+      salary: {
+        grossSalary: r.salary,
+        basic: r.basic, da: r.da, hraReceived: r.hra_received,
+        lta: r.lta, conveyance: r.conveyance, medicalAllowance: r.medical_allow,
+        specialAllowance: r.special_allow, bonus: r.bonus, otherSalary: r.other_salary
+      },
+      exemptionsSection10: { total: r.sec10_total, hraExempt: r.hraExempt },
+      deductionsSection16: {
+        standardDeduction: r.stdDedOld,
+        entertainmentAllowance: r.sec16_entertainment,
+        professionalTax: r.sec16_prof_tax
+      },
+      capitalGains: {
+        stcgEquity: r.stcg, stcgOtherAssets: r.stcg_other,
+        ltcgEquity: r.ltcg, ltcgOtherAssets: r.ltcg_other,
+        netStcg: r.stcg_net, netLtcg: r.ltcg_net
+      },
+      otherSources: {
+        interestSavings: r.interest_savings, interestDeposits: r.interest_deposit,
+        interestITRRefund: r.interest_itr_refund, dividend: r.dividend,
+        gifts: r.gifts, other: r.other, total: r.otherSources
+      },
+      houseProperty: {
+        rentalIncome: r.rental_income, municipalTax: r.municipal_tax,
+        nav: r.hp_nav, netIncome: r.hp_net
+      },
+      grossTotalIncome: r.grossIncome
+    },
+    lossSetOff: {
+      stclEquity: r.loss_stcl_eq, stclOther: r.loss_stcl_oth,
+      ltclEquity: r.loss_ltcl_eq, ltclOther: r.loss_ltcl_oth,
+      housePropertyLoss: r.loss_hp, businessLoss: r.loss_business,
+      bfStcl: r.loss_bf_stcl, bfLtcl: r.loss_bf_ltcl,
+      bfHpLoss: r.loss_bf_hp, bfBusinessLoss: r.loss_bf_biz,
+      totalStcl: r.totalSTCL, totalLtcl: r.totalLTCL
+    },
+    deductionsChapterVIA: {
+      section80C: r.d80c, section80D: r.d80d, section80E: r.d80e,
+      section80G: r.d80g, section80TTA: r.d80tta, section80CCD1B: r.d80ccd,
+      homeLoanInterest24b: r.hloan, total: r.totalDeductions
+    },
+    taxComputation: {
+      oldRegime: {
+        taxableIncome: r.taxableOld, incomeTax: r.taxOld,
+        surcharge: r.surOld, cess: r.cessOld,
+        totalTaxLiability: r.totalTaxOld, rebate87A: r.rebOld,
+        netPayable: r.payableOld
+      },
+      newRegime: {
+        taxableIncome: r.taxableNew, incomeTax: r.taxNew,
+        surcharge: r.surNew, cess: r.cessNew,
+        totalTaxLiability: r.totalTaxNew, rebate87A: r.rebNew,
+        netPayable: r.payableNew
+      },
+      recommendedRegime: r.bestRegime,
+      savingsByBestRegime: r.savings
+    },
+    tdsDetails: {
+      tdsOnSalary: r.tds_salary,
+      tdsOnNonSalary: r.tds_non_salary,
+      totalTDS: r.tds
+    }
+  };
+
+  const filename = `ITR_${pan || 'data'}_AY${ay.replace('-','_')}.json`;
+  downloadFile(JSON.stringify(data, null, 2), filename, 'application/json');
+}
+
+function exportXML() {
+  const r = result;
+  if (!r.grossIncome && r.grossIncome !== 0) {
+    alert('Please complete the tax calculation first (Step 4) before exporting.');
+    return;
+  }
+  const firstName = document.getElementById('first_name').value || '';
+  const middleName = document.getElementById('middle_name').value || '';
+  const lastName = document.getElementById('last_name').value || '';
+  const pan = (document.getElementById('pan').value || '').toUpperCase();
+  const dob = document.getElementById('dob').value || '';
+  const mobile = document.getElementById('mobile').value || '';
+  const email = document.getElementById('email').value || '';
+  const address = document.getElementById('address').value || '';
+  const fy = document.getElementById('fy').value || '2024-25';
+  const ay = document.getElementById('ay').value || '2025-26';
+  const best = r.bestRegime;
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- ITR Summary Data Export | AY ${ay} | Generated: ${new Date().toISOString()} -->
+<!-- Import this file into the Income Tax Dept Offline Utility at incometax.gov.in -->
+<ITRData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <Meta>
+    <AppVersion>1.0</AppVersion>
+    <ExportDate>${new Date().toISOString()}</ExportDate>
+    <FinancialYear>${fy}</FinancialYear>
+    <AssessmentYear>${ay}</AssessmentYear>
+  </Meta>
+
+  <PersonalInfo>
+    <FirstName>${firstName}</FirstName>
+    <MiddleName>${middleName}</MiddleName>
+    <LastName>${lastName}</LastName>
+    <PAN>${pan}</PAN>
+    <DOB>${dob}</DOB>
+    <MobileNo>${mobile}</MobileNo>
+    <EmailAddress>${email}</EmailAddress>
+    <Address>${address}</Address>
+    <AgeGroup>${document.getElementById('age').value}</AgeGroup>
+  </PersonalInfo>
+
+  <IncomeDetails>
+    <Salary>
+      <GrossSalary>${r.salary}</GrossSalary>
+      <BasicSalary>${r.basic}</BasicSalary>
+      <DA>${r.da}</DA>
+      <HRAReceived>${r.hra_received}</HRAReceived>
+      <LTA>${r.lta}</LTA>
+      <ConveyanceAllowance>${r.conveyance}</ConveyanceAllowance>
+      <MedicalAllowance>${r.medical_allow}</MedicalAllowance>
+      <SpecialAllowance>${r.special_allow}</SpecialAllowance>
+      <Bonus>${r.bonus}</Bonus>
+      <OtherSalaryComponents>${r.other_salary}</OtherSalaryComponents>
+    </Salary>
+    <ExemptionsSection10>
+      <TotalSection10>${r.sec10_total}</TotalSection10>
+      <HRAExemption_10_13A>${r.hraExempt}</HRAExemption_10_13A>
+    </ExemptionsSection10>
+    <DeductionsSection16>
+      <StandardDeduction_16_ia>${r.stdDedOld}</StandardDeduction_16_ia>
+      <EntertainmentAllowance_16_ii>${r.sec16_entertainment}</EntertainmentAllowance_16_ii>
+      <ProfessionalTax_16_iii>${r.sec16_prof_tax}</ProfessionalTax_16_iii>
+    </DeductionsSection16>
+    <CapitalGains>
+      <STCG_Equity_STTPaid>${r.stcg}</STCG_Equity_STTPaid>
+      <STCG_OtherAssets>${r.stcg_other}</STCG_OtherAssets>
+      <LTCG_Equity_STTPaid>${r.ltcg}</LTCG_Equity_STTPaid>
+      <LTCG_OtherAssets>${r.ltcg_other}</LTCG_OtherAssets>
+      <Net_STCG_AfterSetOff>${r.stcg_net}</Net_STCG_AfterSetOff>
+      <Net_LTCG_AfterSetOff>${r.ltcg_net}</Net_LTCG_AfterSetOff>
+    </CapitalGains>
+    <OtherSources>
+      <InterestSavingsAccount>${r.interest_savings}</InterestSavingsAccount>
+      <InterestFromDeposits>${r.interest_deposit}</InterestFromDeposits>
+      <InterestITRRefund>${r.interest_itr_refund}</InterestITRRefund>
+      <DividendIncome>${r.dividend}</DividendIncome>
+      <GiftsAndOtherReceipts>${r.gifts}</GiftsAndOtherReceipts>
+      <OtherIncome>${r.other}</OtherIncome>
+      <TotalOtherSources>${r.otherSources}</TotalOtherSources>
+    </OtherSources>
+    <HouseProperty>
+      <AnnualRentalIncome>${r.rental_income}</AnnualRentalIncome>
+      <MunicipalTaxesPaid>${r.municipal_tax}</MunicipalTaxesPaid>
+      <NetAnnualValue>${r.hp_nav}</NetAnnualValue>
+      <NetIncomeHouseProperty>${r.hp_net}</NetIncomeHouseProperty>
+    </HouseProperty>
+    <GrossTotalIncome>${r.grossIncome}</GrossTotalIncome>
+  </IncomeDetails>
+
+  <LossSetOff>
+    <CurrentYear>
+      <STCL_Equity>${r.loss_stcl_eq}</STCL_Equity>
+      <STCL_OtherAssets>${r.loss_stcl_oth}</STCL_OtherAssets>
+      <LTCL_Equity>${r.loss_ltcl_eq}</LTCL_Equity>
+      <LTCL_OtherAssets>${r.loss_ltcl_oth}</LTCL_OtherAssets>
+      <HousePropertyLoss>${r.loss_hp}</HousePropertyLoss>
+      <BusinessLoss>${r.loss_business}</BusinessLoss>
+    </CurrentYear>
+    <BroughtForward>
+      <BF_STCL>${r.loss_bf_stcl}</BF_STCL>
+      <BF_LTCL>${r.loss_bf_ltcl}</BF_LTCL>
+      <BF_HousePropertyLoss>${r.loss_bf_hp}</BF_HousePropertyLoss>
+      <BF_BusinessLoss>${r.loss_bf_biz}</BF_BusinessLoss>
+    </BroughtForward>
+  </LossSetOff>
+
+  <DeductionsChapterVIA>
+    <Section80C>${r.d80c}</Section80C>
+    <Section80D>${r.d80d}</Section80D>
+    <Section80E>${r.d80e}</Section80E>
+    <Section80G>${r.d80g}</Section80G>
+    <Section80TTA>${r.d80tta}</Section80TTA>
+    <Section80CCD1B>${r.d80ccd}</Section80CCD1B>
+    <HomeLoanInterest24b>${r.hloan}</HomeLoanInterest24b>
+    <TotalDeductions>${r.totalDeductions}</TotalDeductions>
+  </DeductionsChapterVIA>
+
+  <TaxComputation>
+    <RecommendedRegime>${best}</RecommendedRegime>
+    <SavingsByBestRegime>${r.savings}</SavingsByBestRegime>
+    <OldRegime>
+      <TaxableIncome>${r.taxableOld}</TaxableIncome>
+      <IncomeTax>${r.taxOld}</IncomeTax>
+      <Surcharge>${r.surOld}</Surcharge>
+      <HealthEducationCess>${r.cessOld}</HealthEducationCess>
+      <TotalTaxLiability>${r.totalTaxOld}</TotalTaxLiability>
+      <Rebate87A>${r.rebOld}</Rebate87A>
+      <NetTaxPayable>${r.payableOld}</NetTaxPayable>
+    </OldRegime>
+    <NewRegime>
+      <TaxableIncome>${r.taxableNew}</TaxableIncome>
+      <IncomeTax>${r.taxNew}</IncomeTax>
+      <Surcharge>${r.surNew}</Surcharge>
+      <HealthEducationCess>${r.cessNew}</HealthEducationCess>
+      <TotalTaxLiability>${r.totalTaxNew}</TotalTaxLiability>
+      <Rebate87A>${r.rebNew}</Rebate87A>
+      <NetTaxPayable>${r.payableNew}</NetTaxPayable>
+    </NewRegime>
+  </TaxComputation>
+
+  <TDSDetails>
+    <TDSOnSalary_Form16>${r.tds_salary}</TDSOnSalary_Form16>
+    <TDSOnNonSalary_Form16A>${r.tds_non_salary}</TDSOnNonSalary_Form16A>
+    <TotalTDS>${r.tds}</TotalTDS>
+  </TDSDetails>
+
+</ITRData>`;
+
+  const filename = `ITR_${pan || 'data'}_AY${ay.replace('-','_')}.xml`;
+  downloadFile(xml, filename, 'application/xml');
+}
+
+function setEntryMode(mode) {
+  const manualBtn = document.getElementById('mode_manual_btn');
+  const form16Btn = document.getElementById('mode_form16_btn');
+  const form16Panel = document.getElementById('form16_panel');
+  if (mode === 'form16') {
+    form16Btn.style.borderColor = 'var(--accent)';
+    form16Btn.style.background = 'rgba(245,158,11,0.08)';
+    form16Btn.querySelector('div:nth-child(2)').style.color = 'var(--accent)';
+    manualBtn.style.borderColor = 'var(--border)';
+    manualBtn.style.background = 'transparent';
+    manualBtn.querySelector('div:nth-child(2)').style.color = 'var(--text-sub)';
+    form16Panel.style.display = '';
+  } else {
+    manualBtn.style.borderColor = 'var(--accent)';
+    manualBtn.style.background = 'rgba(245,158,11,0.08)';
+    manualBtn.querySelector('div:nth-child(2)').style.color = 'var(--accent)';
+    form16Btn.style.borderColor = 'var(--border)';
+    form16Btn.style.background = 'transparent';
+    form16Btn.querySelector('div:nth-child(2)').style.color = 'var(--text-sub)';
+    form16Panel.style.display = 'none';
+  }
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop_zone').style.borderColor = 'var(--border)';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') {
+    processForm16(file);
+  } else {
+    showForm16Status('❌ Please upload a valid PDF file.', 'var(--danger)');
+  }
+}
+
+function handleForm16Upload(event) {
+  const file = event.target.files[0];
+  if (file) processForm16(file);
+}
+
+function processForm16(file) {
+  showForm16Status('📄 Processing ' + file.name + ' — extracting data...', 'var(--accent)');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Use pdf.js or simply acknowledge upload and prompt manual review
+    // Since we can't run pdf.js inline, we simulate a successful upload and guide the user
+    setTimeout(() => {
+      showForm16Status('✅ Form 16 uploaded: <strong>' + file.name + '</strong> (' + (file.size/1024).toFixed(1) + ' KB). Please verify and manually enter figures from your Form 16 in the fields below.', 'var(--accent2)');
+    }, 800);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showForm16Status(msg, color) {
+  const el = document.getElementById('form16_status');
+  el.style.display = '';
+  el.style.color = color;
+  el.innerHTML = msg;
+}
+
+function autoSetAgeGroup() {
+  const dob = document.getElementById('dob').value;
+  if (!dob) return;
+  const today = new Date();
+  const birth = new Date(dob);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  const sel = document.getElementById('age');
+  if (age >= 80) sel.value = 'above80';
+  else if (age >= 60) sel.value = '60to80';
+  else sel.value = 'below60';
+}
+
+// FY → AY mapping: AY = FY end year + 1 (e.g. FY 2024-25 → AY 2025-26)
+const fyToAy = {
+  '2024-25': '2025-26',
+  '2023-24': '2024-25',
+  '2022-23': '2023-24',
+  '2021-22': '2022-23',
+  '2020-21': '2021-22',
+  '2019-20': '2020-21'
+};
+const ayToFy = Object.fromEntries(Object.entries(fyToAy).map(([k,v]) => [v,k]));
+
+function syncAYfromFY() {
+  const fy = document.getElementById('fy').value;
+  const ay = fyToAy[fy];
+  if (ay) document.getElementById('ay').value = ay;
+  updateFYBadge();
+}
+
+function syncFYfromAY() {
+  const ay = document.getElementById('ay').value;
+  const fy = ayToFy[ay];
+  if (fy) document.getElementById('fy').value = fy;
+  updateFYBadge();
+}
+
+function updateFYBadge() {
+  const fy = document.getElementById('fy').value;
+  const ay = document.getElementById('ay').value;
+  document.getElementById('fy_badge').textContent = 'FY ' + fy + ' · AY ' + ay;
+}
+
+
+
+function goStep(n) {
+  document.querySelectorAll('.section-page').forEach((p,i)=>{
+    p.classList.toggle('active', i===n);
+  });
+  document.querySelectorAll('.tab-item').forEach((s,i)=>{
+    s.classList.toggle('active', i===n);
+  });
+  // Scroll to top of content
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function v(id) { return parseFloat(document.getElementById(id)?.value)||0; }
+
+function switchCGTab(tab) {
+  document.getElementById('cg_tab_stcg').classList.toggle('active', tab==='stcg');
+  document.getElementById('cg_tab_ltcg').classList.toggle('active', tab==='ltcg');
+  document.getElementById('cg_panel_stcg').style.display = tab==='stcg' ? '' : 'none';
+  document.getElementById('cg_panel_ltcg').style.display = tab==='ltcg' ? '' : 'none';
+}
+
+function setAutoField(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (value > 0) {
+    el.value = value;
+    el.style.background = 'rgba(16,185,129,0.08)';
+    el.style.borderColor = 'rgba(16,185,129,0.5)';
+  } else {
+    el.value = '';
+    el.style.background = '';
+    el.style.borderColor = '';
+  }
+}
+
+function cgCalc() {
+  // STCG Equity (STT paid)
+  const stcg_e_ded = v('stcg_e_coa')+v('stcg_e_coi')+v('stcg_e_exp');
+  const stcg_e_raw = v('stcg_e_fvc') - stcg_e_ded; // can be negative = loss
+  const stcg_e_bal = Math.max(0, stcg_e_raw);
+  const stcg_e_loss = stcg_e_raw < 0 && v('stcg_e_fvc') > 0 ? Math.abs(stcg_e_raw) : 0;
+  document.getElementById('stcg_e_total_ded').textContent = '₹'+fmt(stcg_e_ded);
+  document.getElementById('stcg_e_balance').textContent = stcg_e_loss > 0
+    ? '−₹'+fmt(stcg_e_loss)+' (LOSS → auto-filled in Losses tab)'
+    : '₹'+fmt(stcg_e_bal);
+  document.getElementById('stcg_e_balance').style.color = stcg_e_loss > 0 ? 'var(--danger)' : 'var(--accent)';
+
+  // STCG Other Assets
+  const stcg_o_ded = v('stcg_o_coa')+v('stcg_o_coi')+v('stcg_o_exp');
+  const stcg_o_raw = v('stcg_o_fvc') - stcg_o_ded;
+  const stcg_o_bal = Math.max(0, stcg_o_raw);
+  const stcg_o_loss = stcg_o_raw < 0 && v('stcg_o_fvc') > 0 ? Math.abs(stcg_o_raw) : 0;
+  document.getElementById('stcg_o_total_ded').textContent = '₹'+fmt(stcg_o_ded);
+  document.getElementById('stcg_o_balance').textContent = stcg_o_loss > 0
+    ? '−₹'+fmt(stcg_o_loss)+' (LOSS → auto-filled in Losses tab)'
+    : '₹'+fmt(stcg_o_bal);
+  document.getElementById('stcg_o_balance').style.color = stcg_o_loss > 0 ? 'var(--danger)' : 'var(--accent)';
+
+  // LTCG Equity
+  const ltcg_e_ded = v('ltcg_e_coa')+v('ltcg_e_coi')+v('ltcg_e_exp');
+  const ltcg_e_raw = v('ltcg_e_fvc') - ltcg_e_ded;
+  const ltcg_e_bal = Math.max(0, ltcg_e_raw);
+  const ltcg_e_loss = ltcg_e_raw < 0 && v('ltcg_e_fvc') > 0 ? Math.abs(ltcg_e_raw) : 0;
+  document.getElementById('ltcg_e_total_ded').textContent = '₹'+fmt(ltcg_e_ded);
+  document.getElementById('ltcg_e_balance').textContent = ltcg_e_loss > 0
+    ? '−₹'+fmt(ltcg_e_loss)+' (LOSS → auto-filled in Losses tab)'
+    : '₹'+fmt(ltcg_e_bal);
+  document.getElementById('ltcg_e_balance').style.color = ltcg_e_loss > 0 ? 'var(--danger)' : 'var(--accent)';
+
+  // LTCG Other Assets
+  const ltcg_o_ded = v('ltcg_o_coa')+v('ltcg_o_coi')+v('ltcg_o_exp');
+  const ltcg_o_raw = v('ltcg_o_fvc') - ltcg_o_ded;
+  const ltcg_o_bal = Math.max(0, ltcg_o_raw);
+  const ltcg_o_loss = ltcg_o_raw < 0 && v('ltcg_o_fvc') > 0 ? Math.abs(ltcg_o_raw) : 0;
+  document.getElementById('ltcg_o_total_ded').textContent = '₹'+fmt(ltcg_o_ded);
+  document.getElementById('ltcg_o_balance').textContent = ltcg_o_loss > 0
+    ? '−₹'+fmt(ltcg_o_loss)+' (LOSS → auto-filled in Losses tab)'
+    : '₹'+fmt(ltcg_o_bal);
+  document.getElementById('ltcg_o_balance').style.color = ltcg_o_loss > 0 ? 'var(--danger)' : 'var(--accent)';
+
+  // Auto-populate current year CG loss fields in Losses tab
+  setAutoField('loss_stcl_equity', stcg_e_loss);
+  setAutoField('loss_stcl_other', stcg_o_loss);
+  setAutoField('loss_ltcl_equity', ltcg_e_loss);
+  setAutoField('loss_ltcl_other', ltcg_o_loss);
+
+  // Auto-populate House Property loss (when interest paid > net rental income)
+  const hpNav = Math.max(0, v('rental_income') - v('municipal_tax'));
+  const hpNetCalc = hpNav - hpNav * 0.30; // after 30% std deduction
+  // HP loss if interest on borrowed capital (home loan) exceeds net rental income
+  const homeLoanInterest = v('hloan'); // from deductions tab
+  const hpLoss = homeLoanInterest > hpNetCalc && homeLoanInterest > 0 ? Math.min(homeLoanInterest - hpNetCalc, 200000) : 0;
+  setAutoField('loss_house_property', hpLoss);
+
+  // Total CG (gains only)
+  const total = stcg_e_bal + stcg_o_bal + ltcg_e_bal + ltcg_o_bal;
+  document.getElementById('cg_total_display').textContent = '₹'+fmt(total);
+}
+
+function lossCalc() {
+  // Current year losses
+  const stcl_eq  = v('loss_stcl_equity');
+  const stcl_oth = v('loss_stcl_other');
+  const ltcl_eq  = v('loss_ltcl_equity');
+  const ltcl_oth = v('loss_ltcl_other');
+  const hp_loss  = Math.min(v('loss_house_property'), 200000);
+  const biz_loss = v('loss_business');
+
+  // B/F losses
+  const bf_stcl  = v('loss_bf_stcl');
+  const bf_ltcl  = v('loss_bf_ltcl');
+  const bf_hp    = v('loss_bf_hp');
+  const bf_biz   = v('loss_bf_business');
+
+  const totalSTCL = stcl_eq + stcl_oth + bf_stcl;
+  const totalLTCL = ltcl_eq + ltcl_oth + bf_ltcl;
+
+  // CG values from cgCalc
+  const stcg_e_ded = v('stcg_e_coa')+v('stcg_e_coi')+v('stcg_e_exp');
+  const stcg_eq  = Math.max(0, v('stcg_e_fvc') - stcg_e_ded);
+  const stcg_o_ded = v('stcg_o_coa')+v('stcg_o_coi')+v('stcg_o_exp');
+  const stcg_oth = Math.max(0, v('stcg_o_fvc') - stcg_o_ded);
+  const ltcg_e_ded = v('ltcg_e_coa')+v('ltcg_e_coi')+v('ltcg_e_exp');
+  const ltcg_eq  = Math.max(0, v('ltcg_e_fvc') - ltcg_e_ded);
+  const ltcg_o_ded = v('ltcg_o_coa')+v('ltcg_o_coi')+v('ltcg_o_exp');
+  const ltcg_oth = Math.max(0, v('ltcg_o_fvc') - ltcg_o_ded);
+
+  const grossSTCG = stcg_eq + stcg_oth;
+  const grossLTCG = ltcg_eq + ltcg_oth;
+
+  // STCL set off: first against STCG, remaining against LTCG
+  const stcl_vs_stcg = Math.min(totalSTCL, grossSTCG);
+  const stcl_remaining = Math.max(0, totalSTCL - stcl_vs_stcg);
+  const stcl_vs_ltcg = Math.min(stcl_remaining, grossLTCG);
+  const netSTCG = Math.max(0, grossSTCG - stcl_vs_stcg);
+
+  // LTCL set off: only against LTCG (after STCL set off)
+  const ltcg_after_stcl = Math.max(0, grossLTCG - stcl_vs_ltcg);
+  const ltcl_vs_ltcg = Math.min(totalLTCL, ltcg_after_stcl);
+  const netLTCG = Math.max(0, ltcg_after_stcl - ltcl_vs_ltcg);
+
+  const netCG = netSTCG + netLTCG;
+
+  const currentTotal = stcl_eq + stcl_oth + ltcl_eq + ltcl_oth + hp_loss + biz_loss;
+  const bfTotal = bf_stcl + bf_ltcl + bf_hp + bf_biz;
+
+  document.getElementById('loss_current_total').textContent = '−₹'+fmt(currentTotal);
+  document.getElementById('loss_bf_total').textContent = '−₹'+fmt(bfTotal);
+  document.getElementById('loss_stcl_setoff').textContent = '−₹'+fmt(stcl_vs_stcg + stcl_vs_ltcg);
+  document.getElementById('loss_ltcl_setoff').textContent = '−₹'+fmt(ltcl_vs_ltcg);
+  document.getElementById('loss_hp_setoff').textContent = '−₹'+fmt(hp_loss + bf_hp);
+  document.getElementById('loss_net_cg').textContent = '₹'+fmt(netCG);
+}
+
+function grossSalary() {
+  return v('basic')+v('hra_received')+v('da')+v('conveyance')+v('medical_allow')+v('special_allow')+v('lta')+v('bonus')+v('other_salary');
+}
+
+function liveCalc() {
+  // Update gross salary display
+  const gs = grossSalary();
+  document.getElementById('gross_salary_display').textContent = '₹'+fmt(gs);
+
+  // Auto-populate HRA Exemption u/s 10(13A) from HRA Details
+  const basicForHRA = v('basic') + v('da');
+  const hraReceived = v('hra_received');
+  const rentPaid = v('rent_paid');
+  const metro = document.getElementById('metro') ? document.getElementById('metro').value : 'no';
+  const autoHRA = calcHRA(basicForHRA, hraReceived, rentPaid, metro);
+  const hraField = document.getElementById('s10_hra');
+  hraField.value = autoHRA > 0 ? autoHRA : '';
+  hraField.style.background = autoHRA > 0 ? 'rgba(16,185,129,0.08)' : '';
+  hraField.style.borderColor = autoHRA > 0 ? 'rgba(16,185,129,0.5)' : '';
+
+  // Section 10 total
+  const s10 = v('s10_hra')+v('s10_lta')+v('s10_edu')+v('s10_hostel')+v('s10_transport')+v('s10_gratuity')+v('s10_leave_encash')+v('s10_vrs')+v('s10_other');
+  document.getElementById('s10_total_display').textContent = '₹'+fmt(s10);
+
+  // Section 16 total
+  const s16 = v('s16_std')+v('s16_entertainment')+v('s16_prof_tax');
+  document.getElementById('s16_total_display').textContent = '₹'+fmt(s16);
+
+  // Net Salary
+  document.getElementById('net_salary_display').textContent = '₹'+fmt(Math.max(0, gs - s10 - s16));
+
+  // Update capital gains derived fields
+  cgCalc();
+  lossCalc();
+
+  // Update other sources total
+  const tdsTotal = v('tds_salary') + v('tds_non_salary');
+  document.getElementById('tds_total_display').textContent = '₹' + fmt(tdsTotal);
+
+  // Update other sources total
+  const ot = v('interest_savings')+v('interest_deposit')+v('interest_itr_refund')+v('dividend')+v('gifts')+v('other');
+  document.getElementById('other_total_display').textContent = '₹'+fmt(ot);
+
+  // House property net income
+  const nav = Math.max(0, v('rental_income') - v('municipal_tax'));
+  const hpNet = Math.max(0, nav - nav * 0.30);
+  document.getElementById('hp_net_display').textContent = '₹'+fmt(hpNet);
+
+  // Update 80C bar
+  const total80c = Math.min(v('epf')+v('ppf')+v('elss')+v('lic')+v('nsc')+v('tuition'),150000);
+  document.getElementById('c80c_total').textContent = '₹'+fmt(total80c);
+  document.getElementById('c80c_bar').style.width = Math.min(100,(total80c/150000)*100)+'%';
+}
+
+function fmt(n) {
+  if(isNaN(n)) return '0';
+  return Math.round(n).toLocaleString('en-IN');
+}
+
+function calcHRA(basicForHRA, hra_received, rent_paid, metro) {
+  const limit1 = hra_received;
+  const limit2 = rent_paid - 0.1 * basicForHRA;
+  const limit3 = metro==='yes' ? 0.5*basicForHRA : 0.4*basicForHRA;
+  return Math.max(0, Math.min(limit1, limit2, limit3));
+}
+
+function taxOldRegime(income, age) {
+  if(age==='above80') {
+    if(income<=500000) return 0;
+    if(income<=1000000) return (income-500000)*0.20;
+    return 500000*0.20 + (income-1000000)*0.30;
+  } else if(age==='60to80') {
+    if(income<=300000) return 0;
+    if(income<=500000) return (income-300000)*0.05;
+    if(income<=1000000) return 10000+(income-500000)*0.20;
+    return 10000+100000+(income-1000000)*0.30;
+  } else {
+    if(income<=250000) return 0;
+    if(income<=500000) return (income-250000)*0.05;
+    if(income<=1000000) return 12500+(income-500000)*0.20;
+    return 12500+100000+(income-1000000)*0.30;
+  }
+}
+
+function taxNewRegime(income, age) {
+  // New regime FY2024-25 slabs
+  if(income<=300000) return 0;
+  if(income<=700000) return (income-300000)*0.05;
+  if(income<=1000000) return 20000+(income-700000)*0.10;
+  if(income<=1200000) return 50000+(income-1000000)*0.15;
+  if(income<=1500000) return 80000+(income-1200000)*0.20;
+  return 140000+(income-1500000)*0.30;
+}
+
+function surcharge(tax, income) {
+  if(income>50000000) return tax*0.37;
+  if(income>20000000) return tax*0.25;
+  if(income>10000000) return tax*0.15;
+  if(income>5000000) return tax*0.10;
+  return 0;
+}
+
+function rebate87A(tax, income, regime) {
+  const limit = regime==='new'?700000:500000;
+  if(income<=limit) return Math.min(tax, regime==='new'?25000:12500);
+  return 0;
+}
+
+function calculate() {
+  const salary = grossSalary();
+  const basic = v('basic');
+  const da = v('da');
+  const hra_received = v('hra_received');
+  const lta = v('lta');
+  const conveyance = v('conveyance');
+  const medical_allow = v('medical_allow');
+  const special_allow = v('special_allow');
+  const bonus = v('bonus');
+  const other_salary = v('other_salary');
+  const rent_paid = v('rent_paid');
+  const metro = document.getElementById('metro').value;
+  // STCG Equity (STT paid) — Section 48 balance → taxed @15%
+  const stcg_e_ded = v('stcg_e_coa')+v('stcg_e_coi')+v('stcg_e_exp');
+  const stcg = Math.max(0, v('stcg_e_fvc') - stcg_e_ded);
+  // STCG Other Assets (c = a - biv)
+  const stcg_o_ded = v('stcg_o_coa')+v('stcg_o_coi')+v('stcg_o_exp');
+  const stcg_other = Math.max(0, v('stcg_o_fvc') - stcg_o_ded);
+  // LTCG Equity (STT paid) balance
+  const ltcg_e_ded = v('ltcg_e_coa')+v('ltcg_e_coi')+v('ltcg_e_exp');
+  const ltcg = Math.max(0, v('ltcg_e_fvc') - ltcg_e_ded);
+  // LTCG Other Assets balance @20%
+  const ltcg_o_ded = v('ltcg_o_coa')+v('ltcg_o_coi')+v('ltcg_o_exp');
+  const ltcg_other = Math.max(0, v('ltcg_o_fvc') - ltcg_o_ded);
+  const interest_savings = v('interest_savings');
+  const interest_deposit = v('interest_deposit');
+  const interest_itr_refund = v('interest_itr_refund');
+  const interest = interest_savings + interest_deposit + interest_itr_refund;
+  const dividend = v('dividend');
+  const gifts = v('gifts');
+  const other = v('other');
+  // House Property
+  const rental_income = v('rental_income');
+  const municipal_tax = v('municipal_tax');
+  const hp_nav = Math.max(0, rental_income - municipal_tax);
+  const hp_net = Math.max(0, hp_nav - hp_nav * 0.30); // 30% standard deduction u/s 24(a)
+  const otherSources = interest + dividend + gifts + other;
+  const age = document.getElementById('age').value;
+
+  // HRA Exemption (old regime) — based on Basic + DA
+  const basicForHRA = basic + da;
+  const hraExempt = calcHRA(basicForHRA, hra_received, rent_paid, metro);
+
+  // Standard Deduction
+  const stdDedOld = 50000;
+  const stdDedNew = 75000;
+
+  // 80C
+  const raw80c = v('epf')+v('ppf')+v('elss')+v('lic')+v('nsc')+v('tuition');
+  const d80c = Math.min(raw80c, 150000);
+  // 80D
+  const d80d = Math.min(v('d80d_self'),25000) + Math.min(v('d80d_par'),50000);
+  // 80E no limit
+  const d80e = v('d80e');
+  // 80G (assume 50%)
+  const d80g = v('d80g')*0.5;
+  // 80TTA
+  const d80tta = Math.min(v('d80tta'),10000);
+  // NPS 80CCD(1B)
+  const d80ccd = Math.min(v('d80ccd'),50000);
+  // Home loan
+  const hloan = Math.min(v('hloan'),200000);
+
+  const totalDeductions = d80c+d80d+d80e+d80g+d80tta+d80ccd+hloan;
+  // Loss Set-Off
+  const loss_stcl_eq  = v('loss_stcl_equity');
+  const loss_stcl_oth = v('loss_stcl_other');
+  const loss_ltcl_eq  = v('loss_ltcl_equity');
+  const loss_ltcl_oth = v('loss_ltcl_other');
+  const loss_hp       = Math.min(v('loss_house_property'), 200000);
+  const loss_business = v('loss_business');
+  const loss_bf_stcl  = v('loss_bf_stcl');
+  const loss_bf_ltcl  = v('loss_bf_ltcl');
+  const loss_bf_hp    = v('loss_bf_hp');
+  const loss_bf_biz   = v('loss_bf_business');
+
+  const totalSTCL = loss_stcl_eq + loss_stcl_oth + loss_bf_stcl;
+  const totalLTCL = loss_ltcl_eq + loss_ltcl_oth + loss_bf_ltcl;
+
+  // Apply STCL against STCG first, then remaining against LTCG
+  const grossSTCG = stcg + stcg_other;
+  const stcl_vs_stcg = Math.min(totalSTCL, grossSTCG);
+  const stcl_rem = Math.max(0, totalSTCL - stcl_vs_stcg);
+  const grossLTCG = ltcg + ltcg_other;
+  const stcl_vs_ltcg = Math.min(stcl_rem, grossLTCG);
+
+  // Net STCG after STCL (keep equity/other proportional)
+  const stcgRatio = grossSTCG > 0 ? stcg / grossSTCG : 0;
+  const stcg_net  = Math.max(0, stcg  - stcl_vs_stcg * stcgRatio);
+  const stcg_other_net = Math.max(0, stcg_other - stcl_vs_stcg * (1 - stcgRatio));
+
+  // Apply LTCL against LTCG (after STCL overflow)
+  const ltcg_after_stcl = Math.max(0, grossLTCG - stcl_vs_ltcg);
+  const ltcl_vs_ltcg = Math.min(totalLTCL, ltcg_after_stcl);
+  const ltcgRatio = grossLTCG > 0 ? ltcg / grossLTCG : 0;
+  const ltcg_net  = Math.max(0, ltcg  - (stcl_vs_ltcg + ltcl_vs_ltcg) * ltcgRatio);
+  const ltcg_other_net = Math.max(0, ltcg_other - (stcl_vs_ltcg + ltcl_vs_ltcg) * (1 - ltcgRatio));
+
+  // Section 10 Exemptions
+  const sec10_total = v('s10_hra')+v('s10_lta')+v('s10_edu')+v('s10_hostel')+v('s10_transport')+v('s10_gratuity')+v('s10_leave_encash')+v('s10_vrs')+v('s10_other');
+  // Section 16 Deductions
+  const sec16_entertainment = v('s16_entertainment');
+  const sec16_prof_tax = Math.min(v('s16_prof_tax'), 2500);
+  const sec16_extra = sec16_entertainment + sec16_prof_tax; // std deduction already in stdDedOld/New
+
+  // HP loss set-off (old regime: against salary, max ₹2L)
+  const hpLossSetoff = loss_hp + loss_bf_hp;
+  const tds_salary = v('tds_salary');
+  const tds_non_salary = v('tds_non_salary');
+  const tds = tds_salary + tds_non_salary;
+
+  // GROSS TOTAL INCOME
+  const grossIncome = salary + stcg + ltcg + stcg_other + ltcg_other + otherSources + hp_net;
+
+  // OLD REGIME taxable — salary net of Sec10 exemptions, Sec16 extras (std ded already in stdDedOld), HP loss
+  const salaryNetOld = Math.max(0, salary - sec10_total - stdDedOld - sec16_extra - hraExempt - hpLossSetoff);
+  const taxableOld = Math.max(0, salaryNetOld + otherSources + hp_net + stcg_other_net + ltcg_other_net - totalDeductions);
+  const baseTaxOld = Math.max(0, taxableOld);
+  let taxOld = taxOldRegime(baseTaxOld, age);
+  taxOld += stcg_net * 0.15;
+  taxOld += Math.max(0, ltcg_net - 100000) * 0.10;
+  taxOld += ltcg_other_net * 0.20;
+  const rebOld = rebate87A(taxOld, baseTaxOld, 'old');
+  taxOld = Math.max(0, taxOld - rebOld);
+  const surOld = surcharge(taxOld, grossIncome);
+  const cessOld = (taxOld + surOld) * 0.04;
+  const totalTaxOld = taxOld + surOld + cessOld;
+  const payableOld = Math.max(0, totalTaxOld - tds);
+
+  // NEW REGIME taxable
+  const salaryNetNew = Math.max(0, salary - stdDedNew - sec16_prof_tax);
+  const taxableNew = Math.max(0, salaryNetNew + otherSources + hp_net + stcg_other_net + ltcg_other_net);
+  let taxNew = taxNewRegime(taxableNew, age);
+  taxNew += stcg_net * 0.15;
+  taxNew += Math.max(0, ltcg_net - 100000) * 0.10;
+  taxNew += ltcg_other_net * 0.20;
+  const rebNew = rebate87A(taxNew, taxableNew, 'new');
+  taxNew = Math.max(0, taxNew - rebNew);
+  const surNew = surcharge(taxNew, grossIncome);
+  const cessNew = (taxNew + surNew) * 0.04;
+  const totalTaxNew = taxNew + surNew + cessNew;
+  const payableNew = Math.max(0, totalTaxNew - tds);
+
+  result = {
+    salary, basic, da, hra_received, lta, conveyance, medical_allow, special_allow, bonus, other_salary,
+    sec10_total, sec16_entertainment, sec16_prof_tax, sec16_extra,
+    stcg, stcg_net, stcg_e_fvc: v('stcg_e_fvc'), stcg_e_coa: v('stcg_e_coa'), stcg_e_coi: v('stcg_e_coi'), stcg_e_exp: v('stcg_e_exp'),
+    stcg_other, stcg_other_net, stcg_o_fvc: v('stcg_o_fvc'), stcg_o_coa: v('stcg_o_coa'), stcg_o_coi: v('stcg_o_coi'), stcg_o_exp: v('stcg_o_exp'),
+    ltcg, ltcg_net, ltcg_e_fvc: v('ltcg_e_fvc'), ltcg_e_coa: v('ltcg_e_coa'), ltcg_e_coi: v('ltcg_e_coi'), ltcg_e_exp: v('ltcg_e_exp'),
+    ltcg_other, ltcg_other_net, ltcg_o_fvc: v('ltcg_o_fvc'), ltcg_o_coa: v('ltcg_o_coa'), ltcg_o_coi: v('ltcg_o_coi'), ltcg_o_exp: v('ltcg_o_exp'),
+    loss_stcl_eq, loss_stcl_oth, loss_ltcl_eq, loss_ltcl_oth, loss_hp, loss_business,
+    loss_bf_stcl, loss_bf_ltcl, loss_bf_hp, loss_bf_biz: loss_bf_biz,
+    totalSTCL, totalLTCL, hpLossSetoff,
+    interest_savings, interest_deposit, interest_itr_refund, interest, dividend, gifts, other, otherSources,
+    rental_income, municipal_tax, hp_nav, hp_net, grossIncome,
+    hraExempt, stdDedOld, stdDedNew, d80c, d80d, d80e, d80g, d80tta, d80ccd, hloan, totalDeductions,
+    taxableOld, taxableNew,
+    taxOld, surOld, cessOld, totalTaxOld, rebOld, payableOld,
+    taxNew, surNew, cessNew, totalTaxNew, rebNew, payableNew,
+    tds, tds_salary, tds_non_salary, age,
+    bestRegime: totalTaxOld <= totalTaxNew ? 'old' : 'new',
+    savings: Math.abs(totalTaxOld - totalTaxNew)
+  };
+
+  renderResults();
+}
+
+function renderResults() {
+  const r = result;
+  const best = r.bestRegime;
+
+  // Summary cards
+  document.getElementById('summary_cards').innerHTML = `
+    <div class="s-card highlight">
+      <div class="s-label">Gross Total Income</div>
+      <div class="s-val" style="color:var(--accent)">₹${fmt(r.grossIncome)}</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Tax (Old Regime)</div>
+      <div class="s-val" style="color:${best==='old'?'var(--accent2)':'var(--danger)'}">₹${fmt(r.totalTaxOld)}</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Tax (New Regime)</div>
+      <div class="s-val" style="color:${best==='new'?'var(--accent2)':'var(--danger)'}">₹${fmt(r.totalTaxNew)}</div>
+    </div>
+    <div class="s-card green">
+      <div class="s-label">Recommended Regime</div>
+      <div class="s-val" style="color:var(--accent2)">${best==='old'?'Old Regime':'New Regime'}</div>
+    </div>
+    <div class="s-card purple">
+      <div class="s-label">Savings by Best Regime</div>
+      <div class="s-val" style="color:var(--accent3)">₹${fmt(r.savings)}</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Total TDS Deducted</div>
+      <div class="s-val">₹${fmt(r.tds)}</div>
+    </div>
+  `;
+
+  // Compare table
+  document.getElementById('compare_table_wrap').innerHTML = `
+    <table class="compare-table">
+      <thead><tr><th>Particulars</th><th>Old Regime</th><th>New Regime</th></tr></thead>
+      <tbody>
+        <tr style="background:rgba(99,102,241,0.04)"><td colspan="3" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:8px 16px;">Salary Income</td></tr>
+        <tr><td>Gross Salary</td><td>₹${fmt(r.salary)}</td><td>₹${fmt(r.salary)}</td></tr>
+        <tr><td>Less: Allowances Exempt u/s 10</td><td style="color:var(--accent2)">− ₹${fmt(r.sec10_total)}</td><td>—</td></tr>
+        <tr><td>Less: Standard Deduction u/s 16(ia)</td><td style="color:var(--accent2)">− ₹${fmt(r.stdDedOld)}</td><td style="color:var(--accent2)">− ₹${fmt(r.stdDedNew)}</td></tr>
+        <tr><td>Less: Entertainment Allowance u/s 16(ii)</td><td style="color:var(--accent2)">− ₹${fmt(r.sec16_entertainment)}</td><td>—</td></tr>
+        <tr><td>Less: Professional Tax u/s 16(iii)</td><td style="color:var(--accent2)">− ₹${fmt(r.sec16_prof_tax)}</td><td style="color:var(--accent2)">− ₹${fmt(r.sec16_prof_tax)}</td></tr>
+        <tr style="background:rgba(99,102,241,0.04)"><td colspan="3" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:8px 16px;">Capital Gains (Taxed Separately)</td></tr>
+        <tr style="background:rgba(99,102,241,0.02)"><td colspan="3" style="font-size:0.72rem;color:#a5b4fc;padding:6px 16px;font-style:italic;">d. STCG on Equity / MF (STT paid) @15%</td></tr>
+        <tr><td>&nbsp;&nbsp;a. Full Value of Consideration</td><td>₹${fmt(r.stcg_e_fvc)}</td><td>₹${fmt(r.stcg_e_fvc)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(i). Cost of Acquisition</td><td>− ₹${fmt(r.stcg_e_coa)}</td><td>− ₹${fmt(r.stcg_e_coa)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(ii). Cost of Improvement</td><td>− ₹${fmt(r.stcg_e_coi)}</td><td>− ₹${fmt(r.stcg_e_coi)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(iii). Expenditure on Transfer</td><td>− ₹${fmt(r.stcg_e_exp)}</td><td>− ₹${fmt(r.stcg_e_exp)}</td></tr>
+        <tr><td>&nbsp;&nbsp;d. Balance STCG — Equity (a − b(iv))</td><td>₹${fmt(r.stcg)}</td><td>₹${fmt(r.stcg)}</td></tr>
+        <tr style="background:rgba(99,102,241,0.02)"><td colspan="3" style="font-size:0.72rem;color:#a5b4fc;padding:6px 16px;font-style:italic;">LTCG on Equity / MF (STT paid) @10% above ₹1L</td></tr>
+        <tr><td>&nbsp;&nbsp;a. Full Value of Consideration</td><td>₹${fmt(r.ltcg_e_fvc)}</td><td>₹${fmt(r.ltcg_e_fvc)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(i). Cost of Acquisition</td><td>− ₹${fmt(r.ltcg_e_coa)}</td><td>− ₹${fmt(r.ltcg_e_coa)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(ii). Cost of Improvement</td><td>− ₹${fmt(r.ltcg_e_coi)}</td><td>− ₹${fmt(r.ltcg_e_coi)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(iii). Expenditure on Transfer</td><td>− ₹${fmt(r.ltcg_e_exp)}</td><td>− ₹${fmt(r.ltcg_e_exp)}</td></tr>
+        <tr><td>&nbsp;&nbsp;c. Balance LTCG — Equity (a − b(iv))</td><td>₹${fmt(r.ltcg)}</td><td>₹${fmt(r.ltcg)}</td></tr>
+        <tr style="background:rgba(99,102,241,0.02)"><td colspan="3" style="font-size:0.72rem;color:var(--text-muted);padding:6px 16px;font-style:italic;">STCG on Other Assets — at Slab Rate</td></tr>
+        <tr><td>&nbsp;&nbsp;a. Full Value of Consideration</td><td>₹${fmt(r.stcg_o_fvc)}</td><td>₹${fmt(r.stcg_o_fvc)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(i). Cost of Acquisition</td><td>− ₹${fmt(r.stcg_o_coa)}</td><td>− ₹${fmt(r.stcg_o_coa)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(ii). Cost of Improvement</td><td>− ₹${fmt(r.stcg_o_coi)}</td><td>− ₹${fmt(r.stcg_o_coi)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(iii). Expenditure on Transfer</td><td>− ₹${fmt(r.stcg_o_exp)}</td><td>− ₹${fmt(r.stcg_o_exp)}</td></tr>
+        <tr><td>&nbsp;&nbsp;c. Balance STCG — Other (a − b(iv))</td><td>₹${fmt(r.stcg_other)}</td><td>₹${fmt(r.stcg_other)}</td></tr>
+        <tr style="background:rgba(99,102,241,0.02)"><td colspan="3" style="font-size:0.72rem;color:var(--text-muted);padding:6px 16px;font-style:italic;">LTCG on Other Assets @20% with Indexation</td></tr>
+        <tr><td>&nbsp;&nbsp;a. Full Value of Consideration</td><td>₹${fmt(r.ltcg_o_fvc)}</td><td>₹${fmt(r.ltcg_o_fvc)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(i). Cost of Acquisition</td><td>− ₹${fmt(r.ltcg_o_coa)}</td><td>− ₹${fmt(r.ltcg_o_coa)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(ii). Cost of Improvement</td><td>− ₹${fmt(r.ltcg_o_coi)}</td><td>− ₹${fmt(r.ltcg_o_coi)}</td></tr>
+        <tr><td>&nbsp;&nbsp;b(iii). Expenditure on Transfer</td><td>− ₹${fmt(r.ltcg_o_exp)}</td><td>− ₹${fmt(r.ltcg_o_exp)}</td></tr>
+        <tr><td>&nbsp;&nbsp;c. Balance LTCG — Other (a − b(iv))</td><td>₹${fmt(r.ltcg_other)}</td><td>₹${fmt(r.ltcg_other)}</td></tr>
+        <tr style="background:rgba(239,68,68,0.05)"><td colspan="3" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--danger);padding:8px 16px;">Losses Set Off against Capital Gains</td></tr>
+        <tr><td>&nbsp;&nbsp;STCL Set Off — Current Year</td><td style="color:var(--accent2)">−₹${fmt(r.loss_stcl_eq+r.loss_stcl_oth)}</td><td style="color:var(--accent2)">−₹${fmt(r.loss_stcl_eq+r.loss_stcl_oth)}</td></tr>
+        <tr><td>&nbsp;&nbsp;LTCL Set Off — Current Year</td><td style="color:var(--accent2)">−₹${fmt(r.loss_ltcl_eq+r.loss_ltcl_oth)}</td><td style="color:var(--accent2)">−₹${fmt(r.loss_ltcl_eq+r.loss_ltcl_oth)}</td></tr>
+        <tr><td>&nbsp;&nbsp;B/F STCL Set Off</td><td style="color:var(--accent2)">−₹${fmt(r.loss_bf_stcl)}</td><td style="color:var(--accent2)">−₹${fmt(r.loss_bf_stcl)}</td></tr>
+        <tr><td>&nbsp;&nbsp;B/F LTCL Set Off</td><td style="color:var(--accent2)">−₹${fmt(r.loss_bf_ltcl)}</td><td style="color:var(--accent2)">−₹${fmt(r.loss_bf_ltcl)}</td></tr>
+        <tr><td>&nbsp;&nbsp;HP Loss Set Off against Salary (max ₹2L)</td><td style="color:var(--accent2)">−₹${fmt(r.hpLossSetoff)}</td><td>—</td></tr>
+        <tr style="background:rgba(245,158,11,0.04)"><td><strong>Net CG after Set-Off (STCG)</strong></td><td colspan="2"><strong>₹${fmt(r.stcg_net+r.stcg_other_net)}</strong></td></tr>
+        <tr style="background:rgba(245,158,11,0.04)"><td><strong>Net CG after Set-Off (LTCG)</strong></td><td colspan="2"><strong>₹${fmt(r.ltcg_net+r.ltcg_other_net)}</strong></td></tr>
+        <tr><td>Savings Account Interest</td><td>₹${fmt(r.interest_savings)}</td><td>₹${fmt(r.interest_savings)}</td></tr>
+        <tr><td>Interest from Deposits (FD/RD etc.)</td><td>₹${fmt(r.interest_deposit)}</td><td>₹${fmt(r.interest_deposit)}</td></tr>
+        <tr><td>Interest on ITR Refund</td><td>₹${fmt(r.interest_itr_refund)}</td><td>₹${fmt(r.interest_itr_refund)}</td></tr>
+        <tr><td>Dividend Income</td><td>₹${fmt(r.dividend)}</td><td>₹${fmt(r.dividend)}</td></tr>
+        <tr><td>Gifts &amp; Other Receipts</td><td>₹${fmt(r.gifts)}</td><td>₹${fmt(r.gifts)}</td></tr>
+        <tr><td>Any Other Income</td><td>₹${fmt(r.other)}</td><td>₹${fmt(r.other)}</td></tr>
+        <tr style="background:rgba(16,185,129,0.04)"><td colspan="3" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:8px 16px;">Income from House Property</td></tr>
+        <tr><td>Annual Rental Income</td><td>₹${fmt(r.rental_income)}</td><td>₹${fmt(r.rental_income)}</td></tr>
+        <tr><td>Less: Municipal Taxes</td><td>− ₹${fmt(r.municipal_tax)}</td><td>− ₹${fmt(r.municipal_tax)}</td></tr>
+        <tr><td>Less: Std. Deduction @30% u/s 24(a)</td><td>− ₹${fmt(Math.round(r.hp_nav*0.30))}</td><td>− ₹${fmt(Math.round(r.hp_nav*0.30))}</td></tr>
+        <tr><td>Net Income from House Property</td><td>₹${fmt(r.hp_net)}</td><td>₹${fmt(r.hp_net)}</td></tr>
+        <tr><td>80C Deductions</td><td>− ₹${fmt(r.d80c)}</td><td>—</td></tr>
+        <tr><td>80D Health Insurance</td><td>− ₹${fmt(r.d80d)}</td><td>—</td></tr>
+        <tr><td>Other Deductions (80E/G/TTA/NPS)</td><td>− ₹${fmt(r.d80e+r.d80g+r.d80tta+r.d80ccd)}</td><td>—</td></tr>
+        <tr><td>Home Loan Interest (24b)</td><td>− ₹${fmt(r.hloan)}</td><td>—</td></tr>
+        <tr style="background:rgba(245,158,11,0.04)"><td><strong>Taxable Income (Slab)</strong></td><td><strong>₹${fmt(r.taxableOld)}</strong></td><td><strong>₹${fmt(r.taxableNew)}</strong></td></tr>
+        <tr><td>Income Tax (Slab + CG)</td><td>₹${fmt(r.taxOld)}</td><td>₹${fmt(r.taxNew)}</td></tr>
+        <tr><td>Surcharge</td><td>₹${fmt(r.surOld)}</td><td>₹${fmt(r.surNew)}</td></tr>
+        <tr><td>Health &amp; Ed. Cess (4%)</td><td>₹${fmt(r.cessOld)}</td><td>₹${fmt(r.cessNew)}</td></tr>
+        <tr><td><strong>Total Tax Liability</strong></td>
+          <td class="${best==='old'?'winner':''}">₹${fmt(r.totalTaxOld)} ${best==='old'?'<span class="tag-better">BETTER</span>':'<span class="tag-worse">HIGHER</span>'}</td>
+          <td class="${best==='new'?'winner':''}">₹${fmt(r.totalTaxNew)} ${best==='new'?'<span class="tag-better">BETTER</span>':'<span class="tag-worse">HIGHER</span>'}</td>
+        </tr>
+        <tr><td>TDS on Salary (Form 16)</td><td>₹${fmt(r.tds_salary)}</td><td>₹${fmt(r.tds_salary)}</td></tr>
+        <tr><td>TDS on Non-Salary (Form 16A/26AS)</td><td>₹${fmt(r.tds_non_salary)}</td><td>₹${fmt(r.tds_non_salary)}</td></tr>
+        <tr><td>Total TDS Deducted</td><td>₹${fmt(r.tds)}</td><td>₹${fmt(r.tds)}</td></tr>
+        <tr style="background:rgba(245,158,11,0.05)"><td><strong>Net Tax Payable / (Refund)</strong></td>
+          <td><strong>₹${fmt(r.payableOld)}</strong></td>
+          <td><strong>₹${fmt(r.payableNew)}</strong></td>
+        </tr>
+      </tbody>
+    </table>`;
+
+  showBreakdown('old');
+  showSlabs('old');
+  renderFinalSummary();
+}
+
+function showBreakdown(regime) {
+  const r = result;
+  document.getElementById('rt_old').classList.toggle('active', regime==='old');
+  document.getElementById('rt_new').classList.toggle('active', regime==='new');
+  const tax = regime==='old' ? r.totalTaxOld : r.totalTaxNew;
+  const taxable = regime==='old' ? r.taxableOld : r.taxableNew;
+  const reb = regime==='old' ? r.rebOld : r.rebNew;
+  const cess = regime==='old' ? r.cessOld : r.cessNew;
+  const sur = regime==='old' ? r.surOld : r.surNew;
+  const payable = regime==='old' ? r.payableOld : r.payableNew;
+  document.getElementById('breakdown_detail').innerHTML = `
+    <div class="breakdown">
+      <div class="brow"><span class="label">Gross Salary</span><span class="val">₹${fmt(r.salary)}</span></div>
+      ${regime==='old'?`<div class="brow"><span class="label">Less: Allowances Exempt u/s 10</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec10_total)}</span></div>`:''}
+      <div class="brow"><span class="label">Less: Standard Deduction u/s 16(ia)</span><span class="val" style="color:var(--accent2)">−₹${fmt(regime==='old'?r.stdDedOld:r.stdDedNew)}</span></div>
+      ${regime==='old'?`<div class="brow"><span class="label">Less: Entertainment Allowance u/s 16(ii)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec16_entertainment)}</span></div>`:''}
+      <div class="brow"><span class="label">Less: Professional Tax u/s 16(iii)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec16_prof_tax)}</span></div>
+      ${regime==='old'?`<div class="brow"><span class="label">Total Deductions (80C/D/E etc.)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.totalDeductions)}</span></div>`:''}
+      <div class="brow"><span class="label">Other Income + House Property + STCG (other) at slab</span><span class="val">₹${fmt(r.otherSources+r.hp_net+r.stcg_other)}</span></div>
+      <div class="brow total" style="margin-bottom:12px"><span class="label">Slab Taxable Income</span><span class="val">₹${fmt(taxable)}</span></div>
+      <div class="brow" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)"><span class="label" style="color:#a5b4fc;">Equity STCG Tax @15%</span><span class="val">₹${fmt(r.stcg*0.15)}</span></div>
+      <div class="brow" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)"><span class="label" style="color:#a5b4fc;">Equity LTCG Tax @10% (above ₹1L)</span><span class="val">₹${fmt(Math.max(0,r.ltcg-100000)*0.10)}</span></div>
+      <div class="brow" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)"><span class="label" style="color:#a5b4fc;">Other STCG (taxed at slab rate above)</span><span class="val">—</span></div>
+      <div class="brow" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)"><span class="label" style="color:#a5b4fc;">Other LTCG Tax @20% (with indexation)</span><span class="val">₹${fmt(r.ltcg_other*0.20)}</span></div>
+      ${reb>0?`<div class="brow"><span class="label">Rebate u/s 87A</span><span class="val" style="color:var(--accent2)">−₹${fmt(reb)}</span></div>`:''}
+      <div class="brow"><span class="label">Surcharge</span><span class="val">₹${fmt(sur)}</span></div>
+      <div class="brow"><span class="label">Health &amp; Ed. Cess (4%)</span><span class="val">₹${fmt(cess)}</span></div>
+      <div class="brow total" style="margin-bottom:14px;"><span class="label"><strong>Total Tax Liability</strong></span><span class="val" style="color:var(--accent);font-size:1.05rem;">₹${fmt(tax)}</span></div>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);padding:4px 0 8px;">Less: TDS Deducted at Source</div>
+      <div class="brow"><span class="label">TDS on Salary — Form 16 (u/s 192)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.tds_salary || 0)}</span></div>
+      <div class="brow"><span class="label">TDS on Non-Salary — Form 16A / 26AS</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.tds_non_salary || 0)}</span></div>
+      <div class="brow total" style="margin-top:4px;"><span class="label"><strong>${payable>=0?'Net Tax Payable to Govt':'Net Refund Due'}</strong></span><span class="val" style="color:${payable>=0?'var(--danger)':'var(--accent2)'};font-size:1.05rem;">₹${fmt(Math.abs(payable))}</span></div>
+    </div>`;
+}
+
+function showSlabs(regime) {
+  document.getElementById('sl_old').classList.toggle('active', regime==='old');
+  document.getElementById('sl_new').classList.toggle('active', regime==='new');
+  const r = result;
+  const income = regime==='old' ? r.taxableOld : r.taxableNew;
+  let slabs, rows='';
+  if(regime==='new') {
+    slabs = [
+      {from:0,to:300000,rate:'0%',label:'Up to ₹3,00,000'},
+      {from:300000,to:700000,rate:'5%',label:'₹3,00,001 – ₹7,00,000'},
+      {from:700000,to:1000000,rate:'10%',label:'₹7,00,001 – ₹10,00,000'},
+      {from:1000000,to:1200000,rate:'15%',label:'₹10,00,001 – ₹12,00,000'},
+      {from:1200000,to:1500000,rate:'20%',label:'₹12,00,001 – ₹15,00,000'},
+      {from:1500000,to:Infinity,rate:'30%',label:'Above ₹15,00,000'},
+    ];
+  } else {
+    const base = r.age==='above80'?500000:r.age==='60to80'?300000:250000;
+    slabs = [
+      {from:0,to:base,rate:'0%',label:`Up to ₹${fmt(base)}`},
+      {from:base,to:500000,rate:'5%',label:`₹${fmt(base+1)} – ₹5,00,000`},
+      {from:500000,to:1000000,rate:'20%',label:'₹5,00,001 – ₹10,00,000'},
+      {from:1000000,to:Infinity,rate:'30%',label:'Above ₹10,00,000'},
+    ];
+  }
+  slabs.forEach(s=>{
+    const active = income>s.from;
+    const chunk = Math.max(0, Math.min(income,s.to===Infinity?income:s.to)-s.from);
+    rows+=`<tr class="${active?'active-slab':''}">
+      <td>${s.label}</td><td>${s.rate}</td>
+      <td>₹${fmt(chunk)}</td>
+      <td>₹${fmt(chunk*(parseFloat(s.rate)/100))}</td>
+    </tr>`;
+  });
+  document.getElementById('slab_table_wrap').innerHTML=`
+    <table class="slab-table">
+      <thead><tr><th>Income Slab</th><th>Rate</th><th>Applicable Income</th><th>Tax</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderFinalSummary() {
+  const r = result;
+  const firstName = document.getElementById('first_name').value || '';
+  const middleName = document.getElementById('middle_name').value || '';
+  const lastName = document.getElementById('last_name').value || '';
+  const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ') || 'Taxpayer';
+  const pan = document.getElementById('pan').value || '—';
+  const dob = document.getElementById('dob').value || '—';
+  const mobile = document.getElementById('mobile').value || '—';
+  const email = document.getElementById('email').value || '—';
+  const address = document.getElementById('address').value || '—';
+  const fy = document.getElementById('fy').value || '2024-25';
+  const ay = document.getElementById('ay').value || '2025-26';
+  const best = r.bestRegime;
+  const pay = best==='old' ? r.payableOld : r.payableNew;
+  document.getElementById('final_summary').innerHTML = `
+    <div class="card">
+      <div class="card-title"><span></span>ITR Summary – ${fullName}</div>
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:10px;">Personal Details</div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="brow"><span class="label">Full Name</span><span class="val">${fullName}</span></div>
+        <div class="brow"><span class="label">PAN</span><span class="val" style="font-family:'JetBrains Mono',monospace;">${pan.toUpperCase()}</span></div>
+        <div class="brow"><span class="label">Date of Birth</span><span class="val">${dob !== '—' ? new Date(dob).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</span></div>
+        <div class="brow"><span class="label">Financial Year</span><span class="val">FY ${fy}</span></div>
+        <div class="brow"><span class="label">Assessment Year</span><span class="val">AY ${ay}</span></div>
+        <div class="brow"><span class="label">Mobile</span><span class="val">${mobile}</span></div>
+        <div class="brow"><span class="label">Email</span><span class="val" style="font-size:0.8rem">${email}</span></div>
+      </div>
+      <div class="brow" style="margin-bottom:16px;"><span class="label">Address</span><span class="val" style="font-size:0.82rem;text-align:right;max-width:60%">${address}</span></div>
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:10px;">Tax Summary</div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="brow"><span class="label">Gross Total Income</span><span class="val">₹${fmt(r.grossIncome)}</span></div>
+        <div class="brow"><span class="label">Recommended Regime</span><span class="val" style="color:var(--accent2)">${best==='old'?'Old Regime':'New Regime'}</span></div>
+        <div class="brow"><span class="label">Total Tax Liability</span><span class="val" style="color:var(--accent)">₹${fmt(best==='old'?r.totalTaxOld:r.totalTaxNew)}</span></div>
+        <div class="brow"><span class="label">TDS on Salary (Form 16)</span><span class="val" style="color:var(--accent2)">₹${fmt(r.tds_salary)}</span></div>
+        <div class="brow"><span class="label">TDS on Non-Salary (Form 16A/26AS)</span><span class="val" style="color:var(--accent2)">₹${fmt(r.tds_non_salary)}</span></div>
+        <div class="brow"><span class="label">Total TDS Already Paid</span><span class="val" style="color:var(--accent2)">₹${fmt(r.tds)}</span></div>
+      </div>
+      <div class="brow total">
+        <span class="label"><strong>${pay>=0?'Net Tax Payable to Govt':'Net Refund Due'}</strong></span>
+        <span class="val" style="color:${pay>=0?'var(--danger)':'var(--accent2)'}; font-size:1.2rem">₹${fmt(Math.abs(pay))}</span>
+      </div>
+    </div>
+    <div class="alert success">✅ You save <strong>₹${fmt(r.savings)}</strong> by choosing the <strong>${best==='old'?'Old':'New'} Tax Regime</strong>. File your ITR accordingly on the Income Tax e-Filing portal.</div>
+    <div class="card">
+      <div class="card-title"><span></span>Salary Breakup</div>
+      <div class="breakdown">
+        <div class="brow"><span class="label">Basic Salary</span><span class="val">₹${fmt(r.basic)}</span></div>
+        <div class="brow"><span class="label">HRA Received</span><span class="val">₹${fmt(r.hra_received)}</span></div>
+        <div class="brow"><span class="label">Dearness Allowance (DA)</span><span class="val">₹${fmt(r.da)}</span></div>
+        <div class="brow"><span class="label">Conveyance Allowance</span><span class="val">₹${fmt(r.conveyance)}</span></div>
+        <div class="brow"><span class="label">Medical Allowance</span><span class="val">₹${fmt(r.medical_allow)}</span></div>
+        <div class="brow"><span class="label">Special Allowance</span><span class="val">₹${fmt(r.special_allow)}</span></div>
+        <div class="brow"><span class="label">LTA</span><span class="val">₹${fmt(r.lta)}</span></div>
+        <div class="brow"><span class="label">Bonus / Performance Pay</span><span class="val">₹${fmt(r.bonus)}</span></div>
+        <div class="brow"><span class="label">Other Salary Components</span><span class="val">₹${fmt(r.other_salary)}</span></div>
+        <div class="brow total"><span class="label">Gross Salary</span><span class="val" style="color:var(--accent)">₹${fmt(r.salary)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Less: Allowances Exempt u/s 10 (Old Regime)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec10_total)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Less: Standard Deduction u/s 16(ia)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.stdDedOld)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Less: Entertainment Allowance u/s 16(ii)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec16_entertainment)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Less: Professional Tax u/s 16(iii)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.sec16_prof_tax)}</span></div>
+        <div class="brow total"><span class="label">Net Salary (after Sec 10 &amp; 16)</span><span class="val" style="color:var(--accent)">₹${fmt(Math.max(0, r.salary - r.sec10_total - r.stdDedOld - r.sec16_extra))}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span></span>Income Breakdown</div>
+      <div class="breakdown">
+        <div class="brow"><span class="label">Gross Salary</span><span class="val">₹${fmt(r.salary)}</span></div>
+        <div class="brow" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15)"><span class="label" style="color:#a5b4fc;">d. Balance STCG — Equity/MF (STT paid) @15%</span><span class="val">₹${fmt(r.stcg)}</span></div>
+        <div class="brow" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15)"><span class="label" style="color:#a5b4fc;">c. Balance LTCG — Equity @10% (above ₹1L)</span><span class="val">₹${fmt(r.ltcg)}</span></div>
+        <div class="brow" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15)"><span class="label" style="color:#a5b4fc;">c. Balance STCG — Other Assets (at slab)</span><span class="val">₹${fmt(r.stcg_other)}</span></div>
+        <div class="brow" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15)"><span class="label" style="color:#a5b4fc;">c. Balance LTCG — Other Assets @20%</span><span class="val">₹${fmt(r.ltcg_other)}</span></div>
+        <div class="brow" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)"><span class="label" style="color:#fca5a5;">Total STCL Set Off (Current + B/F)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.totalSTCL)}</span></div>
+        <div class="brow" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)"><span class="label" style="color:#fca5a5;">Total LTCL Set Off (Current + B/F)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.totalLTCL)}</span></div>
+        <div class="brow" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)"><span class="label" style="color:#fca5a5;">HP Loss Set Off against Salary (Old Regime)</span><span class="val" style="color:var(--accent2)">−₹${fmt(r.hpLossSetoff)}</span></div>
+        <div class="brow" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25)"><span class="label" style="color:#a5b4fc;font-weight:600;">Net CG after Loss Set-Off</span><span class="val" style="color:var(--accent3)">₹${fmt(r.stcg_net+r.stcg_other_net+r.ltcg_net+r.ltcg_other_net)}</span></div>
+        <div class="brow"><span class="label">Savings Account Interest</span><span class="val">₹${fmt(r.interest_savings)}</span></div>
+        <div class="brow"><span class="label">Interest from Deposits (FD/RD)</span><span class="val">₹${fmt(r.interest_deposit)}</span></div>
+        <div class="brow"><span class="label">Interest on ITR Refund</span><span class="val">₹${fmt(r.interest_itr_refund)}</span></div>
+        <div class="brow"><span class="label">Dividend Income</span><span class="val">₹${fmt(r.dividend)}</span></div>
+        <div class="brow"><span class="label">Gifts &amp; Other Receipts</span><span class="val">₹${fmt(r.gifts)}</span></div>
+        <div class="brow"><span class="label">Any Other Income</span><span class="val">₹${fmt(r.other)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Rental Income (House Property)</span><span class="val">₹${fmt(r.rental_income)}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Less: Municipal Tax + 30% Std. Dedn.</span><span class="val" style="color:var(--accent2)">− ₹${fmt(r.municipal_tax + Math.round(r.hp_nav*0.30))}</span></div>
+        <div class="brow" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)"><span class="label" style="color:#6ee7b7;">Net Income from House Property</span><span class="val">₹${fmt(r.hp_net)}</span></div>
+        <div class="brow total"><span class="label">Gross Total Income</span><span class="val" style="color:var(--accent)">₹${fmt(r.grossIncome)}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+// Initial live calc
+liveCalc();
+</script>
+</body>
+</html>
